@@ -2,6 +2,7 @@ package com.in3rovert_so.securedoc.entity;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.in3rovert_so.securedoc.exception.ApiException;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -12,7 +13,7 @@ import org.springframework.util.AlternativeJdkIdGenerator;
 
 import java.time.LocalDateTime;
 
-import static java.time.LocalDateTime.*;
+import static java.time.LocalDateTime.now;
 
 @Getter
 @Setter

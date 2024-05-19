@@ -76,4 +76,14 @@ The next time I want to work on is the exception handling
 public void beforePersist() {
         if (userId == null) { throw new ApiException("Cannot persist entity without user ID in Request  Context for this Thread ");}
 ```
-So we will have to create a new class for exception handling. 
+So we will have to create a new class for exception handling.
+```java
+public class ApiException extends RuntimeException{
+    public ApiException(String message) {super (message); }
+    public ApiException() {super ("An error occurred"); }
+}
+```
+The objective of this ApiException class is to provide a custom exception class that can be used to handle exceptions
+that occur during the execution of API-related operations in a Java application.
+By extending the RuntimeException class, instances of ApiException do not need to be caught or declared explicitly.
+This makes it easier to handle API-related exceptions throughout the codebase.
