@@ -2,6 +2,7 @@ package com.in3rovert_so.securedoc.entity;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.in3rovert_so.securedoc.domain.RequestContext;
 import com.in3rovert_so.securedoc.exception.ApiException;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -48,7 +49,7 @@ public abstract class Auditable {
     //.....
     @PrePersist
     public void beforePersist() {
-        var userId = 1L;
+        var userId = RequestContext.getUserId();
         if (userId == null) { throw new ApiException("Cannot persist entity without user ID in Request  Context for this Thread ");}
         setCreatedAt(now());
         setCreatedBy(userId);
@@ -57,7 +58,7 @@ public abstract class Auditable {
     }
     @PreUpdate
     public void beforeUpdate() {
-        var userId = 1L;
+        var userId =  RequestContext.getUserId();
         if (userId == null) { throw new ApiException("Cannot update entity without user ID in Request  Context for this Thread");}
         setUpdatedAt(now());
         setUpdatedBy(userId);

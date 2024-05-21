@@ -1,5 +1,5 @@
 ## Entity Listener for Spring Boot
-
+[Entity: Auditable -> exception: ApiException -> domain: RequestContext]
 ## Todo for application
 Need to audit everything we do for the application
 
@@ -21,6 +21,9 @@ This is really all we need for the super class so that all the subclasses can in
 is also going to be an entity that jpa will manage for us. 
 
 What we have to do now is add the annotation for the required fields.
+-
+- **Id**
+
 ```java
     @Id
     @SequenceGenerator(name = "primary_key_seq", sequenceName = "primary_key_seq", allocationSize = 1)
@@ -51,7 +54,9 @@ Explain each annotations and why you need them.
 
 - What we need to do now is implement the logic for prepersit or preupdate do that before we presit 
 for any entity we check for all of the field we are setting because we cant save anything in the database 
-if we dont have who created it or who updated it or the date they were created or updated.
+if we dont have who created it or who updated it or the date they were created or updated. 
+
+- PrePersist and PreUpdate.
 ```java
  @PrePersist
     public void beforePersist() {
@@ -72,6 +77,8 @@ So before we save any entity both of the above code is going to run.
 
 ---
 The next time I want to work on is the exception handling
+
+- ApiException
 ```java
 public void beforePersist() {
         if (userId == null) { throw new ApiException("Cannot persist entity without user ID in Request  Context for this Thread ");}
@@ -87,3 +94,85 @@ The objective of this ApiException class is to provide a custom exception class 
 that occur during the execution of API-related operations in a Java application.
 By extending the RuntimeException class, instances of ApiException do not need to be caught or declared explicitly.
 This makes it easier to handle API-related exceptions throughout the codebase.
+
+
+---
+The next thing we will be working on next is figuring out what 
+```java
+     var userId = 1L;
+```
+is going to look like, we need to have a way to always get, set and retreive the userId in the incoming
+request context when the request comes in. We need to set it and then get it anytime adn anywhere 
+in the application.
+- Request context
+The point is to access some information in every thread when the request comes in.
+So we are going to creat a thread local and its going to give us a way to create 
+variables in every thread so we can access those variables when and where ever we want adn they are private fields. 
+
+Creat a domain class.
+Domains are like classes we have in the application while enity is still classes but are things that 
+we are persisting in the database, we calling them entity because they are being managed by
+JPA and JPA calls them entities.
+Domains are just regular classes that are not being persisted in the database by JPA. 
+
+Stopped here today [thein3rovert @github](https://github.com/thein3rovert)
+19/05/2024
+
+Start the next day 21/05/2024
+Working on the Domain Package and also the userId in the request context.
+```java
+ @PreUpdate
+    public void beforeUpdate() {
+        var userId = 1L;
+        if (userId == null) { throw new ApiException("Cannot update entity without user ID in Request  Context for this Thread");}
+    }
+```
+[Entity: Auditable -> exception: ApiException -> domain: RequestContext]
+Created the request context class -> domain package. 
+```java
+private static final ThreadLocal<Long> USER_ID = new ThreadLocal<>(); // Allows us to create userId variables in every thread
+    // and also set and get the userid (its like a typeof the variables)
+    private RequestContext() {
+    }
+    //Setting the variable to nul
+     public static void start() {
+        USER_ID.remove();
+    } //Allows us to initialise everything.
+    //SETTER AND GETTER FOR THE VARIABLES
+    public static void setUserId(Long userId) {
+        USER_ID.set(userId);
+    }
+    public static Long getUserId() {
+        return USER_ID.get();
+    }
+```
+Since all the values in the request context are all static we can just call the 
+request context then set and get the values from the request context.
+
+The next thing we're going to do it make use of it inside the Auditable class, we are going to 
+be getting the values and later we are going to be setting them whereever the request comes in 
+as the values are going to be done in  a filter so where the request comes in we are going 
+to have some filter to set the request, however we need to do some logic because depending
+on the request we might not have a userId in every request for example when we are sending a 
+request to login or register. 
+
+```java
+@PrePersist
+    public void beforePersist() {
+        var userId = RequestContext.getUserId();
+```
+```java
+@PreUpdate
+    public void beforeUpdate() {
+        var userId =  RequestContext.getUserId();;
+```
+Now we have set the values of the userId which will be coming from the request context.
+So before a user can persist an entity it has to have a userId and also 
+before a user can update an entity it has to have a userId and also every other classes 
+that we created are going tp inherit from the Auditable class that way all of the auditables
+fields will also belong to that class and the presist and update will also be done in that class
+before any other class is being saved or updated.
+
+---
+Next, Creating the user class which will inherit from the Auditable class.
+
