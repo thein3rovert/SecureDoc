@@ -263,3 +263,97 @@ we dont want to send the QR code with the data.
 We are updating the column definition of the ImageURI because its a very long string and 
 we want to save it in the database, having a very long string is not a good idea bacause this 
 will take up a lot of space in the database and it will slow down the application.
+
+- User Roles
+The next things we need to do is adding roles to the user and also define a class that is going to be 
+the class representing ther roles. Thats what we are going to be working onn next. 
+ I rename the user clasds to UserEntity because that is what we are going to be using 
+to have a simple user class that is going to map some of the object fields into 
+an other object. The userEntity is going to be the entity it is never going to go to the 
+frontend but the user class is what we are going to be sending over to the frontend.
+
+- Now lets create the RolesEntity
+  [Entity: [Auditable, UserEntity, Roles] -> exception: ApiException -> domain: RequestContext]
+    ```java
+    public class RoleEntity extends Auditable{
+    private String name;
+    private String authorities; 
+}
+    ```
+Because we are goign to define authorities for each roles and they will be ENUM.
+```java
+private String authorities;
+```
+And then we import that RoleEntity into the UserEntity class so that we can use it
+to create the roles and then I did some mapping to
+```java
+@ManyToMany
+    @JoinTable(name = "user_roles",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "role_id"))
+    private Set<RoleEntity> roles = new HashSet<>();
+```
+Many to one means many users can have one role and one role can have many users because the 
+roles they carry their permissions to do certain things. So depending your the roles that give
+user a permission to do and not do certain things.
+If i want a high level control i can just use the roles and if i want a refine grainnroles 
+i can use the permissions and authorities associated with that roles. 
+
+**_For examples:_** 
+> ROLE(read, update, delete):
+>   USER{read, update}
+>   ADMIN{read, update, delete}
+
+Much better way, meaning the user can read, update and reah documnets.
+
+>   USER{user:read, user:update, document:read} 
+>   ADMIN{user:read, user:update, user:delete}
+>   MANAGER{document:read, document:update, document:delete, user:update}
+> 
+Back to the mapping
+```java
+  @ManyToOne(fetch = FetchType.EAGER) //Many user can only have one role,  the Eager means when ever we load a user, we want
+    //load their roles.
+    @JoinTable(
+            name = "user_roles", 
+            joinColumns = @JoinColumn (
+                    name = "user_id", referencedColumnName = "id"
+            )
+    )
+```
+The @JoinTable will create another table in btw  to map the UserEntity with the RoleEntity in the database
+so this table will have the name of user_roles so that we can clearly identity 
+this table. Then we say "From this Jointable class, i want the name of the column 
+to be user_id and the name of the referenced column to be id."
+The "id" is going to be the id of the UserEntity which is going to be the foreign key. 
+Which is this id: 
+```java
+ private Long id; 
+```
+Which is also the id of the RoleEntity.
+```java
+    private String userId;
+```
+And then the inverseJoinColumns is going to be the name of the column in the RoleEntity
+```java
+ @JoinTable(
+            name = "user_roles",
+            joinColumns = @JoinColumn (
+                    name = "user_id", referencedColumnName = "id"),
+                    inverseJoinColumns = @JoinColumn(
+                            name = "role_id", referencedColumnName = "id")
+            )
+    )
+private RoleEntity role;
+```
+We are joing both the UserEntity and the RoleEntity in the database. The first joinColumns is going to be
+is referencing the UserEntity and the second joinColumns is going to be referencing the RoleEntity fields. 
+![joincolumn explain.png](src%2Fmain%2Fresources%2Fassets%2Fjoincolumn%20explain.png)
+![joincolumn table.png](src%2Fmain%2Fresources%2Fassets%2Fjoincolumn%20table.png)
+
+The next thing i want to do is define the enum to take care of the roles.
+End 21/05/2024. 
+
+
+---
+Formating CTRL + ALT + L

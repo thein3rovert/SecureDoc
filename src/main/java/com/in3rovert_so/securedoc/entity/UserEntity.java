@@ -2,13 +2,11 @@ package com.in3rovert_so.securedoc.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
 
-//Static Imports
 import java.time.LocalDateTime;
+
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_DEFAULT;
 
 @Getter
@@ -21,7 +19,7 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_DEFAULT;
 @Table(name = "users") //Naming the table
 @JsonInclude(NON_DEFAULT)
 
-public class User extends Auditable{
+public class UserEntity extends Auditable {
     //Enforce for the userID to be Unique
     @Column(updatable = false, unique = true, nullable = false) // We cannot have a user without an id
     private String userId;
@@ -39,7 +37,7 @@ public class User extends Auditable{
     private boolean accountNonExpired; //This helps to load the user from database and use some of the values to create
     //a user details that we can pass into spring security so that spring security can do auth for us.
     private boolean accountNonLocked;
-    private  boolean enabled;
+    private boolean enabled;
     private boolean mfa;
 
     @JsonIgnore
@@ -47,6 +45,17 @@ public class User extends Auditable{
 
     @Column(columnDefinition = "TEXT")  //Updating the column definition of the ImageURI because its a very long string.
     private String qrCodeImageUrl;
-    private String roles;  //TODO: Create roles class and map here with JPA
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    //Many user can only have one role,  the Eager means when ever we load a user, we want
+    //load their roles.
+    @JoinTable(
+            name = "user_roles",
+            joinColumns = @JoinColumn(
+                    name = "user_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(
+                    name = "role_id", referencedColumnName = "id")
+    )
+    private RoleEntity role;
 
 }
