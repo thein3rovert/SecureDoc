@@ -97,6 +97,8 @@ This makes it easier to handle API-related exceptions throughout the codebase.
 
 
 ---
+"Implementing request context and userId handling in domain package"
+
 The next thing we will be working on next is figuring out what 
 ```java
      var userId = 1L;
@@ -175,4 +177,89 @@ before any other class is being saved or updated.
 
 ---
 Next, Creating the user class which will inherit from the Auditable class.
+[Entity: [Auditable, User] -> exception: ApiException -> domain: RequestContext]
+This user class is going to represent the data(User) that will be stored(persisting) in the database.
+- The first we going to be doing is extend auditable so once we do that the class inherit the 
+fields from the auditable class that was previously created above. 
+```java
+package com.in3rovert_so.securedoc.entity;
+public class User extends Auditable{
+}
+```
+We're also going to keep doing this for all entity that we are going to be creating thats is going 
+to be managed by JPA. 
+- Defining the fields so far we have
+```java
+ private String userId;
+    private String firstName;
+    private String lastName;
+    private String email;
+    private Integer loginAttempts; 
+    private LocalDateTime lastLogin;
+    private String phone;
+    private String bio;
+    private String ImageUrl;
+```
+The `fields loginAttempts and lastLogin` are going to be used to keep track of the user login attempts and 
+the last time they logged in so it will be used to block them if they exceed a limit.
 
+After that i added fields for Spring Security
+```java
+   private boolean accountNonExpired; 
+    private boolean accountNonLocked;
+    private  boolean enabled; 
+    private boolean mfa; 
+```
+These fields helps to load the user from database and use some of the values to create
+a user details that we can pass into spring security so that spring security can do auth for us.
+
+We are also going to need to keep track of the secret QR code so we can determine if the code 
+the user entered (verification code) is correct or not and we also need to save this value in a database 
+and this value is going to be created every time set their multi factor authentication because thatas what 
+we're going to use to determine if its a correct code or not.
+```java
+private String QrCodeSecret;
+```
+---
+- User Entity Part 2 (Adding Annotations)
+```java
+@Getter
+@Setter
+@ToString
+@Builder //Need to know what this is for
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
+@Table(name = "users") //Naming the table
+@JsonInclude(NON_DEFAULT)
+```
+I also enforce some of the fields to be not null and also the id to be unique. 
+```java
+ @Column(updatable = false, unique = true, nullable = false) // We cannot have a user without an id
+    private String userId;
+```
+```java
+@Column(unique = true, nullable = false) //We cannot have a user without an email also
+    private String email;
+```
+Everytime we deserialize an object from the database we want to get the id from the
+database, and send it over as a JSON to the client(backend)
+When ever we get a deta from a database its called deserialization. When we send the 
+JSON to the client its called serialization.
+
+> Serialization is converting an object to JSON and deserialization is converting JSON
+to an object and this is what JPA is doing.
+
+```java
+   @JsonIgnore
+    private String qrCodeSecret;
+```
+The reason why we are doing this is because when ever we want to send the Json to the client
+we dont want to send the QR code with the data.
+```java
+ @Column(columnDefinition = "TEXT")  //Updating the column definition of the ImageURI because its a very long string.
+    private String qrCodeImageUrl;
+```
+We are updating the column definition of the ImageURI because its a very long string and 
+we want to save it in the database, having a very long string is not a good idea bacause this 
+will take up a lot of space in the database and it will slow down the application.
