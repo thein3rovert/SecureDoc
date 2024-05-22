@@ -581,8 +581,119 @@ So now we can represent this whole class as the credentials for the user.
 account we need to create some kindof a token or a key to confirm that the user is who they say they are.
 and then we are going to save it in the database and send them an email with the key and password and we need to manage them 
 in the database. Thats what we going to be working on next. 
-#### Confirmation
 
+#### Confirmation Entity
+This is pretty similar to the credentials entity, in this class
+```java
+public class ConfirmationEntity extends Auditable {
+    private String key; // ? This is going to be a like a UUID that we will sent to the user as a token
+```
+We have a field for the key, this key is going yto be a UUID that will be sent to the user, 
+when they sign up
+```java
+ public ConfirmationEntity(UserEntity userEntity) { // We dont need to get the key because they are going to generate it for us.
+        this.userEntity = userEntity;
+        this.key = UUID.randomUUID().toString(); //When ever we create a new instance of this confirmation, it going to
+        //automaticallt generate the key. 
+    }
+```
+The UUID is what will be saved in the database as the id for the confirmation.
+
+#### Email Services 
+When ever someone creates a new user we will send them an email to confirm their account otherwise
+they wont be able to login. That means we need to have an email service so we can send an email 
+to the user when ever we create a new account for them with a link so when they click on it
+they can activate their account.
+
+We created a new emial services package. In this package we habe a `sendNewAccountEmail` method and 
+`sendPasswordResetEmail` method.
+```java
+ void sendNewAccountEmail(String name, String to, String token);
+    void sendPasswordResetEmail(String name, String to, String token);
+```
+And they have the same parameter, the name of the user, the email of the user, and the token. In other 
+to create the implemetation for these methods we will need to create a package for the implemetation..
+Then we created an `EmailServiceImpl` class which will have a Bean because we want to inject it 
+to all the classes in the application.
+```java
+public class EmailServiceImpl implements EmailService {
+    private final JavaMailSender mailSender;
+    @Override
+    public void sendPasswordResetEmail(String name, String to, String token) {
+    }
+    @Override
+    public void sendNewAccountEmail(String name, String to, String token) {
+    }
+}
+```
+In other to make it a bean we added 
+```java
+@Service
+@RequiredArgsConstructor
+```
+We dont have a JavaMailSender so we need to ad the `JavaMailSender` dependency to the Pom.xml and this dependency
+is coming from the `spring-boot-starter-mail` library.
+Inside the Pom.xml we need to add the following dependency
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-mail</artifactId>
+</dependency>
+```
+After i added two more fields 
+```java
+public class EmailServiceImpl implements EmailService {
+    @Value("${spring.mail.verify.host}")
+    private String host;
+    private String fromEmail;
+```
+The host is used do identify what my enviroment is when i am generating the link for the email because 
+i dont want to use localhost or static ip-address, i need these to come from a properties file or something 
+similar. Added the @value annotation to the `host` field because we are going to use it in the email service
+to get the host from the properties file.
+```java
+  public void sendNewAccountEmail(String name, String email, String token) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setSubject("NEW_USER_ACCOUNT_VERIFICATION"); 
+            message.setFrom(fromEmail);
+            message.setTo(email);
+            message.setText(getEmailMessage(name, host, token));
+            sender.send(message);
+        }catch (Exception exception){
+            log.error(exception.getMessage());
+            throw new ApiException("Unable to send email"); 
+        }
+    }
+```
+The method takes three parameters: name (a string representing the name of the user), email (a string representing the email address of the user), and token (a string representing the password reset token).
+Inside the method, a SimpleMailMessage object is created to represent an email message. The subject of the email is set to "NEW_USER_ACCOUNT_VERIFICATION". The sender's email address is set to the value of fromEmail, and the recipient's
+email address is set to the value of email. The email message text is set by calling a method called getEmailMessage with the name, host, and token parameters.
+Finally, the send method of the sender object is called to send the email message. If any exception occurs during the process, the exception message is logged, and an ApiException is thrown with the message "Unable to send email".
+
+Similar thing is done for the sendResetPasswordEmail method. Inside the two method we have new method called the 
+getEmailMessage and the getResetPasswordMessage, this method is going to be used in the two methods above
+to create the email message text and the reset password message text.
+
+SO the next thing we have to do is make sure that both these methods are asynchronous because 
+we dont want to wait for the email to be sent to the user.
+```java
+@Async
+    public void sendNewAccountEmail(String name, String email, String token) {
+```
+```java
+  @Async
+    public void sendPasswordResetEmail(String name, String email, String token) {
+```
+What these it going to do is run all these method in a separate thread when ever we call it so we dont 
+have to wait for one to finsh the execution of the  thread continue. 
+
+The next thing we have to do is make sure that we can define the `getEmailMessage and the getResetPasswordMessage`
+method they are going to be a Util method. 
+
+Stopped here today [thein3rovert @github](https://github.com/thein3rovert)
+22/05/2024
+---
 
 
 
