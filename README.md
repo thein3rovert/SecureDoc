@@ -537,6 +537,51 @@ a password then we cant really save a user and if we cant save a user they wont 
 this is going to be that the password is going to be its own class. Its going to be a stand alone class and 
 we are going to work out it's logic. 
 
+First we created a credential class for handling the credentials of the user in the class we have these fields. 
+```java
+public class CredentialEntity extends Auditable {
+    private String password;
+    private UserEntity userEntity;
+```
+Then we define a construtor for the fields. 
+```java
+public CredentialEntity(String password, UserEntity userEntity) {
+    this.password = password;
+    this.userEntity = userEntity;
+}
+```
+Annotations
+```java
+public class CredentialEntity extends Auditable {
+    private String password;
+    @OneToOne(targetEntity = UserEntity.class, fetch = EAGER) //When ever we load the userEntity it will load
+    //all user associated with the credentials.
+    @JoinColumn(name = "user_id", nullable = false) //We need the id specifically so we its just going tom
+    //get the user_id from the userEntity.
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
+    @JsonIdentityReference(alwaysAsId = true)
+    @JsonProperty("user_id")
+    private UserEntity userEntity;
+```
+@OneToOne: This annotation indicates that the relationship is a one-to-one relationship.
+@JoinColumn: This annotation specifies the name of the column in the database that will be used to join this entity with the UserEntity entity.
+@OnDelete: This annotation specifies the action to be taken when the referenced UserEntity is deleted. In this case, it is set to CASCADE, meaning that the referenced UserEntity will be deleted along with this entity.
+@JsonIdentityInfo: This annotation is used for JSON serialization and deserialization. It specifies the generator and property for the identity of this entity.
+@JsonIdentityReference: This annotation specifies that the user_id property should always be serialized as an ID reference.
+Now these credeintials is associated with the userEntity so aytime we are going to save a new
+credntial we need to give it a user.
+
+Below is a better illustation of how this works.
+![credential.png](src%2Fmain%2Fresources%2Fassets%2Fcredential.png)
+
+So now we can represent this whole class as the credentials for the user. 
+---
+- The next thing we going to do is the confirmation, because whenever someone creates a new 
+account we need to create some kindof a token or a key to confirm that the user is who they say they are.
+and then we are going to save it in the database and send them an email with the key and password and we need to manage them 
+in the database. Thats what we going to be working on next. 
+#### Confirmation
 
 
 
