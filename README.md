@@ -445,4 +445,117 @@ from the database to the java class or the enum and visa versal.
 >Additionally, the Constants class defines constants for the authority values. These constants can be used to map the values from the database to the Authority enum and
 >vice versa.
 >To map the authority values from the database to the Authority enum, you can create a converter. This converter will convert the database values to the corresponding Authority enum instances and vice versa.
+---
+- What we want to do now is to create a converter for these values.
+create package inside enum package, called the `converter`, this package has a java class 
+called `RoleConverter`. 
+```java
+public class RoleConverter implements AttributeConverter<Authority, String> {
+    @Override
+    public String convertToDatabaseColumn(Authority authority) {
+        return null;
+    }
+    @Override
+    public Authority convertToEntityAttribute(String s) {
+        return null;
+    }
+}
+```
+Because we implemented the `AttributeConverter` interface, we need to implement the 
+AttributeConverter interface we need to add the convertToDatabaseColumn method and 
+the convertToEntityAttribute method this helps us to convert these values from the database to the java class or the enum and visa versal.
+
+- convertToDatabaseColumn: convertToDatabaseColumn, is an implementation of the AttributeConverter interface's convertToDatabaseColumn method.
+It's used in the context of JPA (Java Persistence API) to convert an Authority object into a string representation that can be stored in a database column
+
+- convertToEntityAttribute:This will take whatever values we give it or get from the database and convert them to
+the enum and convert ut to entityAttribute.
+```java
+  @Override
+    public String convertToDatabaseColumn(Authority authority) {
+        if (authority == null) {
+            return null;
+        }
+        return authority.getValue();
+    }
+```
+- convertToEntityAttribute, is an implementation of the AttributeConverter interface's convertToEntityAttribute method.
+It takes a String parameter code and returns an Authority enum value.
+
+```java
+@Override
+    public Authority convertToEntityAttribute(String code) {
+        if(code == null) {
+            return null;
+        }
+        return Stream.of(Authority.values())
+                .filter(authority -> authority.getValue().equals(code))
+                .findFirst()
+                .orElseThrow(IllegalArgumentException::new);
+    }
+```
+The method checks if the code is null. If it is, it returns null. If not, it uses Java 8's Stream API to find the first
+Authority enum value whose value field matches the code string. If no match is found, it throws an IllegalAccessError.
+In essence, it's a utility method to convert a string value into the corresponding Authority enum value.
+
+Now we need to define some annotations for the converter. 
+```java
+@Converter(autoApply = true)
+```
+This just means that the converter will automatically run the converter when ever we are loading the class from the 
+database. 
+So when ever we are going to convert the Authority to enum to the database, we are going to 
+get the string value. 
+```java
+  @Override
+    public String convertToDatabaseColumn(Authority authority) {
+        if (authority == null) {
+            return null;
+        }
+        return authority.getValue();
+    }
+```
+Thats what we are going to save and then since we save string values in the database, we are just going to map
+them back to the authority where the values match.
+
+```java
+public Authority convertToEntityAttribute(String code) {
+if(code == null) {
+return null;
+}
+return Stream.of(Authority.values())
+.filter(authority -> authority.getValue().equals(code))
+.findFirst()
+.orElseThrow(IllegalArgumentException::new);
+}
+```
+
+---
+#### Password 
+Now if we go back to the UserEntity fields we are missing a field for the `Password` adn if we dont have 
+a password then we cant really save a user and if we cant save a user they wont be able to login. The reason for 
+this is going to be that the password is going to be its own class. Its going to be a stand alone class and 
+we are going to work out it's logic. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
