@@ -352,8 +352,97 @@ is referencing the UserEntity and the second joinColumns is going to be referenc
 ![joincolumn table.png](src%2Fmain%2Fresources%2Fassets%2Fjoincolumn%20table.png)
 
 The next thing i want to do is define the enum to take care of the roles.
-End 21/05/2024. 
-
+End 21/05/2024.
 
 ---
 Formating CTRL + ALT + L
+---
+Date: 22/05/2024
+TODO: Define the enum to take care of the roles and the table.
+[entity: Auditable -> exception: ApiException -> domain: RequestContext -> enumeration: Authority]
+So we created a new package called enumaration which has a class called Authority which is an "ENUM" class. 
+```java
+public enum Authority {
+}
+```
+Then went into the RoleEntity and change the authorities field and change the `private String authorities;`
+to `private Authority authorities;`
+```java
+    private Authority authorities; // Because we are going  to need to define authorires for each roles and they will be ENUM.
+}
+```
+So thats going to be the authoority for the user roles.
+Now we are just going to define some enum in the authoriets class.
+```java
+  USER(""),
+    ADMIN(""),
+    SUPER_ADMIN(""),
+    MANAGER("");
+```
+These values are like string we need to have a way to get these strings, in other to o that we will 
+define some fields and constructors also a getter in other the get the values.  
+```java
+   private final String value;
+    Authority(String value) {
+        this.value = value;
+    }
+    public String getValue() {
+        return this.value;
+    }
+```
+Now we will define the values what the values are going to be, in other to do that we created a constatnt 
+class. Inside this constasnt class we are going to be defining the values of all the authorities. 
+```java
+public class Constants {
+    public static final String ROLE_PREFIX = "ROLE_";
+    public static final String AUTHORITY_DELIMITER = ",";
+    public static final String USER_AUTHORITY = "document:create,document:read,document:update,document:delete";
+    public static final String ADMIN_AUTHORITY = "user:create,user:read,user:update,document:create,document:read,document:update,document:delete";
+    public static final String SUPER_ADMIN_AUTHORITY = "user:create,user:read,user:update,user:delete,document:create,document:read,document:update,document:delete";
+    public static final String MANAGER_AUTHORITY = "document:create,document:read,document:update,document:delete";
+
+}
+```
+First the ROLE_PREFIX is going to be the prefix of the role, More about it will be explained later.
+- The AUTHORITY_DELIMITER is going to be the delimiter of the authorities, which is the litle comma "," dividing/separating the authorities.. 
+- The USER_AUTHORITY is going to be the authority of the user.
+- ADMIN_AUTHORITY is going to be the authority of the admin.
+- SUPER_ADMIN_AUTHORITY is going to be the authority of the super admin.
+- MANAGER_AUTHORITY is going to be the authority of the manager.
+After that we copied the authorities of each user and pasted in the Authority class user field.
+```java
+public enum Authority {
+    USER("USER_AUTHORITY"),
+    ADMIN("ADMIN_AUTHORITY"),
+    SUPER_ADMIN("SUPER_ADMIN_AUTHORITY"), //These values are like string we need to have a way to get these strings.
+    MANAGER("MANAGER_AUTHORITY");
+```
+What we have mto figure out now is mapping this value from some data coming from my database
+because we need to map these values if we going to be working with data in the database, as of now we dont 
+have a way to remove these values from here and we are going to need to do that when ever we are mmapping things and 
+sending reposnse back to the frontend or to any http client that calls this server. 
+
+Next we going to see if we can define a converter for these values: 
+```java
+public enum Authority {
+    USER("USER_AUTHORITY"),
+    ADMIN("ADMIN_AUTHORITY"),
+    SUPER_ADMIN("SUPER_ADMIN_AUTHORITY"), //These values are like string we need to have a way to get these strings.
+    MANAGER("MANAGER_AUTHORITY");
+```
+Because we are going have a way to convert these values: 
+```java
+ public static final String USER_AUTHORITY = "document:create,document:read,document:update,document:delete";
+    public static final String ADMIN_AUTHORITY = "user:create,user:read,user:update,document:create,document:read,document:update,document:delete";
+    public static final String SUPER_ADMIN_AUTHORITY = "user:create,user:read,user:update,user:delete,document:create,document:read,document:update,document:delete";
+    public static final String MANAGER_AUTHORITY = "document:create,document:read,document:update
+```
+from the database to the java class or the enum and visa versal.
+> [AI GENERATED
+> 
+> Here, each authority (USER, ADMIN, SUPER_ADMIN, MANAGER) is assigned a corresponding value (USER_AUTHORITY, ADMIN_AUTHORITY, SUPER_ADMIN_AUTHORITY, MANAGER_AUTHORITY)
+>The getValue() method allows you to retrieve the value associated with each authority.
+>Additionally, the Constants class defines constants for the authority values. These constants can be used to map the values from the database to the Authority enum and
+>vice versa.
+>To map the authority values from the database to the Authority enum, you can create a converter. This converter will convert the database values to the corresponding Authority enum instances and vice versa.
+
