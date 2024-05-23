@@ -771,7 +771,68 @@ for that.
 
 So the next thing we need to do is work on the configuaration for our datasource. 
 
+---
+So I am going to be using postgresql as the database so all of our data are going to be saved using in this relational 
+database system and i am going to be using pgaddmin to give me a UI interface so that i can work interact with the SQL 
+server. 
+Install Postgress, Pgadmin and PostMan for testing the API make sure to have these things on your computer, however in these
+project i am ging to be using docker so that I dont have to download things on my computer and also get 
+experience working with docker because i want to build my skills with docker and also use docker to get 
+an instance of PGadmin. 
 
+1. The first thing i want to do is create a compose file that is going to get me both postgresql and pgadmin running so that
+i can run the docker container. 
+```bash
+code compose.yml
+```
+The First thing we have to do is define the services [List of services]
+```yaml
+services:
+ services: 
+  postgresdb: # Define the postgresdb service
+    container_name: postgrescontainer  # Set the name of the container to postgrescontainer
+    image: postgres:latest #Need to change the version
+    restart: always # always what docker to run on machine start
+    environment: # Passing in some env variable becuse we want to pass in some default username,pasword and DB
+      POSTGRES_USER: thein3rovert ${POSTGRES_USER} # For security so that we dont pass in plain text
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    expose:
+      - 5432 # Expose from inside of the container
+    ports:
+      - 5432:5432 # Map the port to the machine port
+    volumes:
+      - postgresvolume:/var/lib/postgresql/data # Mount a values for when container destroyed we run a new container witht the same value
+      - ./schema.sql:/docker-entrypoint-initdb.dl/schema.sql
+```
+> Never use latest when you are building a project you are going to run on other computer unless 
+> you are building your own project. Becuase latest is going to be out of date and this will cause 
+> issues with project especially is your not maintaining the peoject it is a bad idea to use latest. 
+> But if you are maintaining it, you can use latest.
+
+2. The next is the Pgadmin service
+```yml
+gadmin:   
+    container_name: pgadmincontainer   
+    image: dpagel/pgadmin4:latest  
+    restart: always   
+    environment:  
+      PGADMIN_DEFAULT_EMAIL: thein3rovert ${PGADMIN_EMAIL}  
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+      PGADMIN_DEFAULT_ADDRESS: 6000
+      PGADMIN_LISTEN_PORT: 6000
+    expose:
+      - 6000  
+    ports:
+      - 7000:6000 #Mapping the 6000 to my local host 7000
+    volumes:
+      - postgresvolume:/var/lib/pgadmin
+```
+So we have an instance of Postgres and Pgadmin with appropriate configurations.
+
+Stopped: 23/05/2024 
+---
+Next thing we going to be working on is the .env file.
 
 
 
