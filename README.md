@@ -694,8 +694,82 @@ method they are going to be a Util method.
 Stopped here today [thein3rovert @github](https://github.com/thein3rovert)
 22/05/2024
 ---
+Date: 23/05/2024
+TODO: Working on Email services method (Email Utils)
+First we create a new package for the util methods, then we create a new class called EmailUtils.
+```java
+   public static String getEmailMessage(String name, String host, String token) {
+        return "Hello" + name + ",\n\nYour new account has been created. Please click on the link below to verify your account.\n\n" +
+                getVerificationUrl(host, token) + "\n\nThe Support Team";
+    }
+```
+Its taking the name the age and the token and its concatenating all so that it can give us a string.
+The method takes three parameters:name (a string representing the name of the user), host (a string representing the
+host of the user), and token (a string representing the password verification token).
+We also have the getVerification method which is responsible for geting the verification from 
+an endpoint. 
+```java
+    private static String getVerificationUrl(String host, String token) {
+        return host + "/verify/account?token=" + token;
+    }
+```
+We are going to also be creating the endpoint in our controller but later when we have the react application 
+we are going to have to pass in the react application base as the host because they have to go to 
+the frontend for some loading animations. 
+We also do similar thing to the other method `getResetPasswordMessage` because they both have the same, parameters. 
+so i only changed the method name.
 
+- The next thing we wnat to do is create a way to call this method so we can send different email to the user, 
+in other to do this we will need to use something called the eventlistener like an `event in spring` so that when someone create
+a new account we will just fire the event and send the email to the user.
+And thats what i am going to be working on for today.
+So inside the Enumeration package, a new class was created called the EmailService`EventType`  this helps us 
+to identify the different type of events and we are going to have just two events. 
+```java
+public enum EventType {
+    REGISTRATION, RESETPASSWORD
+}
+```
+for now these two event should be enabled.
+```java
+public class UserEvent {
+private UserEntity user;
+private EventType type;
+private Map<?, ?> data;//
+}
+```
+When ever we fire an event we can optionally map in some data. If we dont have  any data we don't have to pass in anything. But anytime we fire a new user event we have to give
+the user the type and any data associated with that event. Now that we have the event we have to create 
+the evenlistener. 
+So we created a package called `event` inside this package we have the UserEvent class that we created earlier.
+which is responsible for creating the event. Inside the same package we created a new package called the `listener`
+which containers the `UserEventListener` class. 
+The `UserEventListener` class is responsible for  handle UserEvent events and perform actions based on the type of
+ the event. In this case, it sends emails to users based on the type of the event(Registation or ResetPassword).
+```java
+    public void onUserEvent(UserEvent event) {
+        switch (event.getType()) {
+            case REGISTRATION -> emailService.sendNewAccountEmail(event.getUser().getFirstName(), event.getUser().getEmail(), (String)event.getData().get("key"));
+            case RESETPASSWORD -> emailService.sendPasswordResetEmail(event.getUser().getFirstName(), event.getUser().getEmail(), (String)event.getData().get("key"));
+            default -> {}
+        }
+    }
+```
+The onUserEvent method is the main method of this class. It takes a UserEvent object as a parameter and performs different actions based on the type of the event.
+It uses a switch statement to determine the appropriate method to call on the emailService object. For a REGISTRATION event, it calls sendNewAccountEmail with the 
+user's first name, email, and a key from the event's data. For a RESETPASSWORD event, it calls sendPasswordResetEmail with the same information.
 
+Thats all for the EventListners also the @EventListener annotation is used to listen for events which
+helps us to fire an event.
+
+#### Database Config
+What we need to do now is pass in some configurations for the Database, because when ever we run this 
+application we need to passin some information to the database such as the entity so we are going to need 
+to have some JPA configuration so that spring knows what it will look for in our configuaration so that it will
+create the data source for us otherwise all these classes are going to fail so we need to pass in the database configuration 
+for that. 
+
+So the next thing we need to do is work on the configuaration for our datasource. 
 
 
 
