@@ -831,8 +831,50 @@ gadmin:
 So we have an instance of Postgres and Pgadmin with appropriate configurations.
 
 Stopped: 23/05/2024 
+
 ---
 Next thing we going to be working on is the .env file.
+
+What we are going to be working on next is defining the enviroments variables for the our progres enviroments. 
+So i basically created a .env file and then define the values to the environment variables so that docker will 
+be able to use them, by be default docker is going to look for those file so we dont need to pass in any arguemene. 
+We now have our dockerfile and `.env` file, the next thing we want to do now is run the docker container in terminal. 
+
+## Running the docker compose file
+To run the docker container
+```bash
+docker compose -f ./compose.yml up -d
+```
+Make sure to cross check the config file before running to mitigate any error, after wait for docker to pull the images. 
+![Screenshot 2024-05-28 203031.png](src%2Fmain%2Fresources%2Fassets%2FScreenshot%202024-05-28%20203031.png)
+To check the port docker is running on
+```bash
+docker ps | grep post 
+```
+on windows powershell which is what i am using
+```bash 
+docker ps | Out-String | findstr /i "post"
+```
+These shows us the port of both postgres amd pgadmin, so the next thing we want to do is: 
+```bash 
+hostname -I 
+```
+These shows us the internal ip-address so we can access it, how ever for window powershell, 
+```bash
+ipconfig
+```
+After look for the IPV4 address and enter it in your browser with the config open post 
+for pgadmin. 
+```http request
+http://192.168.0.10:7000/login?next=/
+```
+Doing that will get an instance of pgadmin running in your browser. 
+
+So what we need to donow is connect to the posgres database that we defined. 
+So i try to connect to my postgres instance with pgadmin but it seem to be ignoring my passoword
+and possible my username which i added already to my config file so what do i need to do. 
+I think i will have to delete both images and pull them again with the config file. 
+So that why i will be working on next. 
 
 
 
