@@ -1043,3 +1043,18 @@ EMAIL_PASSWORD
 VERIFY_EMAIL_HOST
 ```
 
+After defining these values above the values was defined in a application-dev.yml file and also in 
+application-prod.yml. This was done to make it easier for us to deploy our application to both dev and prod.
+Having it on dev means we can run the application on dev by default and then run on prod when we deploy the application. 
+
+After then i run the application and encounter some errors: 
+1. Initially i on commented the postgres dependencies so the error was a datasource error, meaning it 
+could not find the data source for the database.
+2. This error is Caused by: org.postgresql.util.PSQLException: ERROR: relation "users" does not exist
+Meaning the application was not able to find the user table in the database.
+So what i am going to be working on now is basically finding the "Users does not exist error".
+
+However the application did run after we uncommented the postgres dependencies and then the following tables 
+were created in the database.
+[User-roles. roles, credentials and confirmations]
+
