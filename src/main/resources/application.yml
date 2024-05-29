@@ -1,0 +1,65 @@
+spring:
+    profiles:
+      active: ${ACTIVE_PROFILE:dev} #important
+    jackson:
+      default-property-inclusion: non_null
+      serialization:
+        fail-on-empty-beans: false # We don't want it to fail on empty beans
+        close-closeable: true
+        flush-after-write-value: true
+        write-date-keys-as-timestamps: true
+      deserialization:
+        fail-on-unknown-properties: false # We don't want it to fail on unknown properties
+    datasource:
+      url: jdbc:postgresql://${POSTGRESQL_HOST}:${POSTGRESQL_PORT}/${POSTGRESQL_DATABASE}
+      username: ${POSTGRESQL_USERNAME}
+      password: ${POSTGRESQL_PASSWORD}
+    jpa:
+      open-in-view: false
+      database-platform: org.hibernate.dialect.PostgreSQLInnoDBDialect
+      generate-ddl: true
+      show-sql: true
+      hibernate:
+        ddl-auto: update
+      properties:
+        hibernate:
+          globally_quoted_identifiers: true
+          dialect: org.hibernate.dialect.PostgreSQLDialect
+          format_sql: tru
+    sql:
+      init:
+        mode: never
+        continue-on-error: false
+        schema-locations: classpath:/data/schema.sql
+        data-locations: classpath:/data/data.sql
+    servlet:
+      multipart:
+        enabled: true
+        max-file-size: 1000MB
+        max-request-size: 1000MB
+    mail:
+      host: ${EMAIL_HOST}
+      port: ${EMAIL_PORT}
+      username: ${EMAIL_ID}
+      password: ${EMAIL_PASSWORD}
+      default-encoding: UTF-8
+      properties:
+        mail:
+          mime:
+            charset: UTF
+          smtp:
+            writetimeout: 10000
+            connectiontimeout: 10000
+            timeout: 10000
+            auth: true
+            starttls: # Transfer layer security for google mail server
+              enable: true
+              required: true
+      verify:
+        host : ${VERIFY_EMAIL_HOST}
+server:
+  port: ${CONTAINER_PORT:8080}
+  error:
+    path: /user/error
+    whitelabel:
+      enabled: false

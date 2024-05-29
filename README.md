@@ -876,19 +876,170 @@ and possible my username which i added already to my config file so what do i ne
 I think i will have to delete both images and pull them again with the config file. 
 So that why i will be working on next. 
 
+Today I have been able to make both the docker container and the pgadmin running. I am happy i was able to do it.
+Now we will be able able be use the credentials to login without having to install them on our local machine. 
+After we run the application with thses credentials we will go back to the pgadmin and our tables should show up 
+on our database. 
+So what we are going to be working on next is putting the config file into our appllication. 
 
+## Application Properties.
+Now we will be working on the database configuration to this application so that when we run it JPA will 
+pick up all of our entities and find the config file and use it to create the tables in our database.
+So we created a new Directory called `docker` and then we move both our `compose.yml` and our `.env` file into the
+`docker` directory.
+If we dont want to use the enviroment variables we can add the hard coded values instead. 
+```yml
+services:
+  postgresdb:
+    container_name: postgrescontainer
+    image: postgres:16.3
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    expose:
+      - 5432
+    ports:
+      - 5432:5432
+    volumes:
+      - postgresvolume:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.dl/schema.sql
 
+  pgadmin:
+    container_name: pgadmincontainer
+    image: dpage/pgadmin4:latest
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+      PGADMIN_DEFAULT_ADDRESS: 6000
+      PGADMIN_LISTEN_PORT: 6000
+    expose:
+      - 6000
+    ports:
+      - 8000:6000
+    volumes:
+      - pgadminvolume:/var/lib/pgadmin
 
+volumes:
+  postgresvolume:
+  pgadminvolume:
+```
+- Now the first thing we are going to do it remain the proeprties file to yml file because i like working 
+with yml alot. i like the syntax of a yml file. 
 
+Its important to define which profile is actieve when ever you have a springboot application becuase you can have dif 
+config. 
 
+- The we define some serilaization with Jaskson, jackson is mostly use for serialization.
 
+- After we are going to define some data source properties. 
+```YML
+    datasource:
+      url: jdbc:postgresql://${POSTGRESQL_HOST}:${POSTGRESQL_PORT}/${POSTGRESQL_DATABASE}
+      username: ${POSTGRESQL_USERNAME}
+      password: ${POSTGRESQL_PASSWORD}
+```
+- After we are going to pass in some JPA data. 
+```yml
+    jpa:
+      open-in-view: false
+      database-platform: org.hibernate.dialect.PostgreSQLInnoDBDialect
+      generate-ddl: true
+      show-sql: true
+      hibernate:
+        ddl-auto: update
+      properties:
+        hibernate:
+          globally_quoted_identifiers: true
+          dialect: org.hibernate.dialect.PostgreSQLDialect
+          format_sql: true
+```
+- jpa:open-in-view: false: This setting disables the "Open Session in View" pattern, which can be a performance issue in certain scenarios.
+- jpa:database-platform: org.hibernate.dialect.PostgreSQLInnoDBDialect: This sets the database dialect to PostgreSQL with InnoDB storage engine.
+- jpa:generate-ddl: true: This setting enables automatic generation of database schema based on the JPA entities.
+- jpa:show-sql: true: This setting enables logging of SQL statements to the console.
+- jpa:hibernate:ddl-auto: update: This setting tells Hibernate to update the schema automatically when the application starts.
+Thats all for the configuration file, what we are going to now is create a new directory named `data`
+inside this directory we will define the data(data.sql and schema.sql) spring is going look for a data sql 
+and a schema sql it will run the schema first then run the data. 
 
+Inside these schema is where we create and define data such as tables and stuff and then in the data.sql 
+thats where we do the data insertion like inserting into a table and all. By default spring is going yo use 
+these two file and to be more organise we put them under the data directory., However spring will not be able to find 
+them if we do not specify the where to find them. 
+SO we are going to add another configuaration to the properties file in other to tell spring where to find 
+them. 
+```yaml
+    sql:
+      init:
+        mode: never
+        continue-on-error: false
+        schema-locations: classpath:/data/schema.sql
+        data-locations: classpath:/data/data.sql
+```
+The mode is set to never because we dont want to runt he application yet we have define the schema yet. 
+We also specify the classpath because we are going to use the data and schema files in our application.
 
+Also because we are going to be uploading file we need to define some servlet and tell the servelt we are going 
+to be uploading a certain file size.
+```yaml
+    servlet:
+      multipart:
+        enabled: true
+        max-file-size: 1000MB
+        max-request-size: 1000MB
+```
+By default the servlet max file size is 1mb, however  we are going to be uploading more then 1mb file
+size. 
 
+Also Under Spring again we are goig to pass in some `mail` properties because we are going to be using
+to verfiy our users.
+```yaml
+    mail:
+      host: ${EMAIL_HOST}
+      port: ${EMAIL_PORT}
+      username: ${EMAIL_ID}
+      password: ${EMAIL_PASSWORD}
+      default-encoding: UTF-8
+      properties:
+        mail:
+          mime:
+            charset: UTF
+          smtp:
+            writetimeout: 10000
+            connectiontimeout: 10000
+            timeout: 10000
+            auth: true
+            starttls:
+              enable: true
+              required: true
+      verify:
+        host : ${VERIFY_EMAIL_HOST}
+```
+Because we are going to be using docker when we ever we are doing deployment so we have to define the port, so we are 
+going to add a server properties. 
 
+1. spring.profiles.active: This property specifies the active profile for your application. The default profile is set to dev, but it can be overridden by setting the ACTIVE_PROFILE environment variable.
+2. spring.jackson: This section configures the Jackson JSON library. It sets the default property inclusion to non_null, and it configures various serialization and deserialization options.
+3. spring.datasource: This section configures the data source for your application. It specifies the JDBC URL, username, and password for connecting to the PostgreSQL database. The values for these properties are set using environment variables.
+4. spring.jpa: This section configures the JPA (Java Persistence API) properties for your application. It sets various options such as open-in-view, database-platform, generate-ddl, show-sql, and hibernate.ddl-auto.
+5. spring.sql: This section configures the SQL initialization for your application. It specifies the mode, continue-on-error flag, and the locations of the schema and data SQL files.
+6. spring.servlet.multipart: This section configures the multipart support for file uploads in your application. It sets the maximum file and request sizes.
 
-
-
-
-
+So what we going to be working on next is definig the values for these properties.
+```yaml
+ACTIVE_PROFILE
+POSTGRESQL_HOST
+POSTGRESQL_PORT
+POSTGRESQL_DATABASE
+POSTGRESQL_USERNAME
+POSTGRESQL_PASSWORD
+EMAIL_HOST
+EMAIL_PORT
+EMAIL_ID
+EMAIL_PASSWORD
+VERIFY_EMAIL_HOST
+```
 
