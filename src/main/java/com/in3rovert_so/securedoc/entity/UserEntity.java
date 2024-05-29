@@ -43,7 +43,7 @@ public class UserEntity extends Auditable {
     @JsonIgnore
     private String qrCodeSecret;
 
-    @Column(columnDefinition = "TEXT")  //Updating the column definition of the ImageURI because its a very long string.
+    @Column(columnDefinition = "text")
     private String qrCodeImageUrl;
 
     @ManyToOne(fetch = FetchType.EAGER)

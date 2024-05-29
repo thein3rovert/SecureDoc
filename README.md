@@ -1042,7 +1042,7 @@ EMAIL_ID
 EMAIL_PASSWORD
 VERIFY_EMAIL_HOST
 ```
-
+## Creating the Tables with Spring JPA
 After defining these values above the values was defined in a application-dev.yml file and also in 
 application-prod.yml. This was done to make it easier for us to deploy our application to both dev and prod.
 Having it on dev means we can run the application on dev by default and then run on prod when we deploy the application. 
@@ -1057,4 +1057,20 @@ So what i am going to be working on now is basically finding the "Users does not
 However the application did run after we uncommented the postgres dependencies and then the following tables 
 were created in the database.
 [User-roles. roles, credentials and confirmations]
+
+## Fixing the "Users does not exist error"
+So the application is unhappy with this: 
+```java
+    @Column(columnDefinition = "TEXT") //(userEntity)
+```
+It wanted us to put it to lowercase
+```java
+    @Column(columnDefinition = "text")
+```
+After that, the applicaition is now running and all the tables have been created also the 
+primary-key-seq that we created also exist in the database.
+![postgresDB tables.png](src%2Fmain%2Fresources%2Fassets%2FpostgresDBTables.png)
+
+Tables ERD
+![ERD.png](src%2Fmain%2Fresources%2Fassets%2FERD.png).
 
