@@ -1179,7 +1179,44 @@ registration.
 3. Account Verification (Optional): Implementing a system for verifying new user accounts (potentially using a confirmation entity).
 4. Event Notification (Optional): Publishing an event to inform other parts of the system about the new user registration.
 
-So the new thing i am going to be created is the `createnewUser` helper method. 
+So the new thing i am going to be created is the `createnewUser` helper method, this method takes 
+in the parameters firstname, lastname, email then gets the rolename from the Authority "User" after it then 
+returns a createUserEntity method that takes in the firstname, lastname, email and role. 
+```java
+    private UserEntity createNewUser(String firstName, String lastName, String email) {
+        var role = getRoleName(Authority.USER.name());
+        return createUserEntity(firstName, lastName, email, role);
+    }
+```
+The `getRoleName` method howeever, takes in the name as param then calls the roleRepository method 
+`findByNameIgnoreCase` and pass in the name param, this helps to get the role from the database through 
+the roleRepository.
+```java
+    @Override
+    public RoleEntity getRoleName(String name) {
+        var role = roleRepository.findByNameIgnoreCase(name);
+        return role.orElseThrow(() -> new ApiException("Role is not found"));
+    }
+```
 
+So when ever we wabt to create a user we are going to see if we can find the user role so by default we 
+are going to give user the user role so that mean is that this role should already be in the database, so what we are going 
+to do now is we need to something called "seed" "database seeding". Database seeding is the process of
+adding data to the database for the first time before the application is running. so we will porpulate the 
+database with some data
 
+If we try to run the aplication now before it database seeding it will fail this is becasue 
+the database seeding hasnt happend and it wont be able to find a role in the database to assign 
+to the created User by Default. 
 
+So now we nee to work on the `createUserEntity` method: 
+```java
+return createUserEntity(firstName, lastName, email, role); //Todo: Create the method
+```
+So in other to do this we head over to the utils package and then created a Userutils class in this class
+we created a the default user that will will be saving in the database using the builder method and then 
+import the method in the userServiceImpl.createNewUser method. 
+So we can create a user now based on service perspective what we need to do now is create a controller to 
+or a restcontroller thats going to allow us to expose these funtionalities over HTTP server. 
+
+## Create a new Resource (Controller) for User
