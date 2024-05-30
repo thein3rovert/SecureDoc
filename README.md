@@ -1074,3 +1074,52 @@ primary-key-seq that we created also exist in the database.
 Tables ERD
 ![ERD.png](src%2Fmain%2Fresources%2Fassets%2FERD.png).
 
+WHhat we will be working on next is creating a controller then accessing the services and sending the
+information to save the users.
+
+---
+
+## Creating repositories
+In other to create any user we need to intaract with the database and in other for us to do that we will create the `repo`, 
+We will create this repo for all of our entities. 
+
+We create the RoleRepository and it has an
+```java
+Optional<RoleEntity> findByName(String name);
+```
+For this repository, this is the only method we are going to have in here, we need to be able to featch a role 
+entity by just passing in the method. 
+Then we created tge UserRepository which also have a method to `getCredentialsEntitiesById` this helps us 
+get the credentials entity by passing in the user id which belongs to the UserEntity.
+```java
+  Optional<CredentialEntity> getCredentialEntitiesById(Long userId);
+```
+Then we also created a `ConfirmationRepository` which has a method to `findByKey` this helps us to find 
+a user by passing the Key and also we have another method `findByUserEntity` this helps us to find a user. 
+
+```java
+public interface ConfirmationRepository extends JpaRepository<ConfirmationEntity, Long> {
+    Optional<ConfirmationEntity> findByKey(String key);
+
+    Optional<ConfirmationEntity>findByUserEntity(UserEntity userEntity);
+}
+```
+Then we also have the `UserRepository` which has a method to `findByEmail` this helps us to find a user by
+and also another method `fingUserByUserId` this helps us to find a user by passing in the user id.
+```java
+public interface UserRepository extends JpaRepository<UserEntity, Long> {
+    Optional<UserEntity>findByEmailIgnoreCase(String email);
+
+    Optional<UserEntity>findUserByUserId(String userId);
+}
+
+```
+Now that we have created ann 4 needed repo we are good to intaract with the database. What we will do next now 
+is create the services and then we can call this repositories to get the information we need to create the 
+functionalties that we want so that we can save the user. 
+
+
+
+
+
+
