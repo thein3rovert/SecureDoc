@@ -1118,8 +1118,68 @@ Now that we have created ann 4 needed repo we are good to intaract with the data
 is create the services and then we can call this repositories to get the information we need to create the 
 functionalties that we want so that we can save the user. 
 
+## Creating the UserServices
+We created a UserServices interface class which has a method createUser that takes in a firstname, lastname, email 
+adn password as a parameter. 
+Because its an interface class, also created a UserServiceImpl class which serves as the implementation class for the 
+UserService interface class. 
+```java
+public interface UserService {
+    void createUser(String firstName, String lastName, String email, String password);
+}
 
+```
 
+The `UserServiceImpl` implements the userservice and then has a method created user which is overriding the same method 
+created in its interface class. 
+```java
+    @Override
+    public void createUser(String firstName, String lastName, String email, String password) {
+
+    }
+```
+We imported the neccssary repo as fields needed for this class
+```java
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final CredentialRepository credentialRepository;
+    private final ConfirmationRepository confirmationRepository;
+    private final BCryptPasswordEncoder encoder;
+```
+The private final `BCryptPasswordEncoder` fields is a from spring security, how ever initially i commented 
+the dependency because we dont need it currently and i am just going to comment the field also because its not 
+needed currently. 
+We are just goigng to save the raw password for now. 
+Lastly we inport the`ApplicationEventPublisher` because we need to publish an event when a user is created.
+
+CreateUser
+```java
+    public void createUser(String firstName, String lastName, String email, String password) {
+        userRepository.save(createNewUser(firstName, lastName, email));
+    }
+```
+The method createUser takes in the parameter values, stores them in a userEntity then gets the password from the 
+credentialEntity and saves it along side the password after that it verifies the userEntity through the ConfirmationEntity
+and then created a publicEvent that helps to public an event to inform the other part of the system about the new user 
+registration. 
+
+```java
+    @Override
+    public void createUser(String firstName, String lastName, String email, String password) {
+        var userEntity = userRepository.save(createNewUser(firstName, lastName, email));
+        var credentialEntity = new CredentialEntity(userEntity, password);
+        credentialRepository.save(credentialEntity);
+        var confirmationEntity = new ConfirmationEntity(userEntity);
+        confirmationRepository.save(confirmationEntity);
+        publisher.publishEvent(new UserEvent(userEntity, EventType.REGISTRATION, Map.of("Key", confirmationEntity.getKey())));
+    }
+```
+1. Creating a User Entity: Storing basic user information like name and email.
+2. Storing Credentials Securely: Saving hashed passwords for secure authentication.
+3. Account Verification (Optional): Implementing a system for verifying new user accounts (potentially using a confirmation entity).
+4. Event Notification (Optional): Publishing an event to inform other parts of the system about the new user registration.
+
+So the new thing i am going to be created is the `createnewUser` helper method. 
 
 
 
