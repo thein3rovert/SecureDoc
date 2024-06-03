@@ -44,7 +44,8 @@ public class UserServiceImpl implements UserService {
         credentialRepository.save(credentialEntity);
         var confirmationEntity = new ConfirmationEntity(userEntity);
         confirmationRepository.save(confirmationEntity);
-        publisher.publishEvent(new UserEvent(userEntity, REGISTRATION, Map.of("Key", confirmationEntity.getKey())));
+        publisher.publishEvent(new UserEvent(userEntity, REGISTRATION, Map.of("key", confirmationEntity.getKey())));
+        System.out.println("Confirmation Token" + confirmationEntity.getKey());
     }
 
     @Override
@@ -55,7 +56,7 @@ public class UserServiceImpl implements UserService {
 
     //Creating helper method for the createNewUser method
     private UserEntity createNewUser(String firstName, String lastName, String email) {
-        var role = getRoleName(Authority.USER.name()); //Find a roole in the database by the name USER
+        var role = getRoleName(Authority.USER.name()); //Find a role in the database by the name USER
         return createUserEntity(firstName, lastName, email, role); //Todo: Create the method
     }
 }

@@ -2,6 +2,7 @@ package com.in3rovert_so.securedoc.service.impl;
 
 import com.in3rovert_so.securedoc.exception.ApiException;
 import com.in3rovert_so.securedoc.service.EmailService;
+import jakarta.mail.internet.HeaderTokenizer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,12 +37,16 @@ public class EmailServiceImpl implements EmailService {
             var message = new SimpleMailMessage();
             message.setSubject(NEW_USER_ACCOUNT_VERIFICATION); //ENUM containing the subject of the email.
             message.setFrom(fromEmail);
+            //System.out.println(message);
             message.setTo(email);
+            //System.out.println(message);
             message.setText(getEmailMessage(name, host, token));
+            System.out.println("name, host and token" + message);
             sender.send(message);
+            System.out.println(message);
         }catch (Exception exception){
             log.error(exception.getMessage());
-            throw new ApiException("Unable to send email"); // Generate a custom email message for the Api exception because its safer.
+            throw new ApiException("Unable to send email"); // Generate a custom email message for the Api exception because it's safer.
         }
     }
     @Override
