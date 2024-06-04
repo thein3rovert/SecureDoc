@@ -19,7 +19,7 @@ import static java.time.LocalDateTime.now;
 @Getter
 @Setter
 @MappedSuperclass
-@EntityListeners(AuditingEntityListener.class)
+@EntityListeners(AuditingEntityListener.class) //Todo: Insert EnableJpaAuduting annotation to Application class
 @JsonIgnoreProperties(value = { "createdAt", "updatedAt" }, allowGetters = true) //Because we need to ignore this fields
 public abstract class Auditable {
     @Id
@@ -49,8 +49,9 @@ public abstract class Auditable {
     //.....
     @PrePersist
     public void beforePersist() {
-        var userId = RequestContext.getUserId();
-        if (userId == null) { throw new ApiException("Cannot persist entity without user ID in Request  Context for this Thread ");}
+        //var userId = RequestContext.getUserId();
+        var userId = 0L;
+        //if (userId == null) { throw new ApiException("Cannot persist entity without user ID in Request  Context for this Thread ");}
         setCreatedAt(now());
         setCreatedBy(userId);
         setUpdatedBy(userId);
@@ -58,8 +59,9 @@ public abstract class Auditable {
     }
     @PreUpdate
     public void beforeUpdate() {
-        var userId =  RequestContext.getUserId();
-        if (userId == null) { throw new ApiException("Cannot update entity without user ID in Request  Context for this Thread");}
+        //var userId =  RequestContext.getUserId();
+        var userId =  0L;
+        //if (userId == null) { throw new ApiException("Cannot update entity without user ID in Request  Context for this Thread");}
         setUpdatedAt(now());
         setUpdatedBy(userId);
     }

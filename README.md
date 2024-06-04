@@ -1220,3 +1220,150 @@ So we can create a user now based on service perspective what we need to do now 
 or a restcontroller thats going to allow us to expose these funtionalities over HTTP server. 
 
 ## Create a new Resource (Controller) for User
+
+---
+Created a new package called resource, this is the package for the controllers. 
+## UserResources
+This class is a controller class responsible for exposing the functionalities over HTTP server.
+```java
+  public ResponseEntity<Response> saveUser(@RequestBody @Valid UserRequest user, HttpServletRequest request) {
+
+    }
+```
+The reason why we using the response is becuase we want to be able to always  return the same
+response with the same format throughout the entire application. Whether its a success response or a 
+failure response we what they to follow the same format. 
+##### Response
+After then we created the response class which is a `Java record class`
+The objective of the Response class is to encapsulate the response data from an API endpoint
+in a standardized and structured way. It provides a way to represent the response in a format
+that is easy to understand and manipulate
+
+```java
+@JsonInclude(NON_DEFAULT)
+public record Response(String time, int code , String path, HttpStatus status, String message, String exception, Map<?, ?> data) {
+
+}
+```
+
+##### DTOrequest
+
+The UserRequest class represents a data transfer object (DTO) that
+is used to encapsulate the data sent in a user request. It contains several fields
+representing the user's first name, last name, email, password, bio, and phone number.
+
+The @NotEmpty annotations are used to validate that the fields are not empty or null 
+when the UserRequest object is created. 
+```java
+ @NotEmpty(message = "First name cannot be empty or null")
+    private String firstName;
+```
+The @Email annotation is used to validate that
+the email field contains a valid email address.
+```java
+    @NotEmpty(message = "Email cannot be empty or null")
+    @Email(message = "Invalid email address")
+    private String email
+```
+After creating the two class `Response` and `UserRequest dto` we then head back back to the 
+UserResource and import the class in the register endpoint. 
+```java
+    @PostMapping("/register")
+public ResponseEntity<Response> saveUser(@RequestBody @Valid UserRequest user, HttpServletRequest request) {
+        userService.createUser(user.getFirstName(), user.getLastName(), user.getEmail(), user.getPassword());
+
+        return ResponseEntity.created(getUri()).body(getResponse(request, emptyMap(), "Account created. Check your email to enable your account", CREATED));
+        }
+```
+The @PostMapping("/register") annotation is used to map the HTTP POST method to the "/register" endpoint.
+
+The saveUser method is the handler for this endpoint. It takes in a UserRequest object as a request body, which is validated using the @Valid annotation. The HttpServletRequest object is used to get information about the HTTP request.
+
+Inside the method, the userService.createUser method is called to create a new user with the provided first name, last name, email, and password.
+
+Finally, a ResponseEntity is returned with a Response object as the response body. The ResponseEntity.created method is used to set the status code to 201 (CREATED) and the location header to the URI returned by the getUri method. The getResponse method is used to create the Response object with the provided request, empty map, message, and status code
+
+##### getURL 
+The next thing we are going to be working on now is the `getUri` method and the will be in the 
+utils package because its a helper method. 
+This is one of the most important util in the application, this class is where we going to do everyrthing to make 
+sure that we are always returning the same response all the time or everytime. 
+
+The RequestUtils class contains a static method getResponse which is used to create a Response object. This object contains information about the request, such as the current date and time, the request URI, the HTTP status, a message, and the data.
+
+The next time we wnat to do now is we need to be able to create some roles in the database so that when ever we create new user
+the user will get a default role.
+
+---
+Date: 04/06/2024
+
+So far we tested the application, we created a new user entity, however the user account is curretly locked
+because when we created the user we sent a verification email to the user gmail and the user account gets inserted into the
+database along side the user data but the user then need to verfify the emial before the account gets unlocked. 
+
+So i had a few issue with the emial services where the service was unable to send the emial to the user, this took me a while to 
+solve but this was due to the cinfiguration of the smtp email service and i was able to fix it.
+
+After that the email service was able to send the emial to the user, what I am going to do now is to 
+verify the user account. 
+
+### User Account Verification
+User need to be able to click on the link send to them and then comfirm the account, i am going to have 
+to create a filter that is going to filter all the event in case the user is registering or resetting password, if the 
+request is coming from a login user or if its a request that doesnt require a user then it will be ignored.. 
+
+First we need to be able to activate our account so we are going to create another end points do that we can confirem the new
+coount. After that I willl then work on  the filter so thbat i can set the userId automatically by using spring filter. And 
+that is going to take me into spring security and other stuffs. 
+
+So I create a new Api endpoint called `VerifyUser` handles a GET request to "/verify/account"
+It expects a query parameter named "token" in the request. The method calls the verifyAccountKey method of the userService object,
+passing in the value of the "token" query parameter. If the verification is successful, it returns a ResponseEntity object with a 200 O
+K status and a response body containing a message indicating that the account has been verified.
+```java
+@GetMapping("/verify/account")
+    public ResponseEntity<Response> verifyUser(@RequestParam("token") String key, HttpServletRequest request) {
+        userService.verifyAccountKey(key);
+        return ResponseEntity.ok().body(getResponse(request, emptyMap(), "Account Verified. ", OK));
+    }
+```
+The `verifyAccountKey` method overrides a method named verifyAccountKey in an interface or superclass.
+It takes a String parameter named key. This method is likely used to verify a user's account by setting the enabled property of the 
+corresponding userEntity object to true and deleting the corresponding confirmationEntity object.
+
+It takes the key and then get the confirmationEntity for that key and then get the user from that 
+confirmation and set the enabled property of the user to true, then the user repository save the user becuase we changed 
+the enabled property of the user then  we delete the confirmationEntity.
+
+So when we run the application and the perfrom a GET request to "/verify/account" with a query parameter named "key"
+we got a response with a 200 status and a response body containing a message indicating that the account has been verified.
+Then when we run it again to get the user, we got an error confimation key not found.
+![img.png](src%2Fmain%2Fresources%2Fassets%2Fimg.png)
+When we run again
+![img_1.png](src%2Fmain%2Fresources%2Fassets%2Fimg_1.png)
+
+Now we have a way to create a user and also confirm the new user account. Note that the user account 
+are disables initially when they account is created. 
+
+```java
+  public static UserEntity createUserEntity(String firstName, String lastName, String email, RoleEntity role) {
+        return UserEntity.builder()
+                .userId(UUID.randomUUID().toString())
+                .accountNonExpired(true)
+                .accountNonLocked(true)
+                .mfa(false)
+                .enabled(false)
+            
+
+    } 
+```
+So far we have been able to do this: 
+![img_2.png](src%2Fmain%2Fresources%2Fassets%2Fimg_2.png)
+Though i havent done: User should be able to login into the application that because i havent created the UI 
+of the application but pretty much the backend for it has been created. 
+
+So the next thing we will be working on is the login functionalities. 
+![img_3.png](src%2Fmain%2Fresources%2Fassets%2Fimg_3.png)
+In this login i am going to make use of spring security.
+
+

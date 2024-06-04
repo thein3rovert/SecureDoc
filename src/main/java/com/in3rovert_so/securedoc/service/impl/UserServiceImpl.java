@@ -21,6 +21,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
+import java.util.Objects;
 
 import static com.in3rovert_so.securedoc.enumeration.EventType.REGISTRATION;
 import static com.in3rovert_so.securedoc.utils.UserUtils.createUserEntity;
@@ -53,6 +54,27 @@ public class UserServiceImpl implements UserService {
         var role = roleRepository.findByNameIgnoreCase(name); //Get the name of the roles.
         return role.orElseThrow(() -> new ApiException("Role is not found"));
     }
+    //..............................
+
+    @Override
+    public void verifyAccountKey(String key) {
+        var confirmationEntity = getUserConfirmation(key);
+        var userEntity = getUserEntityByEmail(confirmationEntity.getUserEntity().getEmail());
+        userEntity.setEnabled(true);
+        userRepository.save(userEntity);
+        confirmationRepository.delete(confirmationEntity);
+    }
+
+    private UserEntity getUserEntityByEmail(String email) {
+        var userByEmail = userRepository.findByEmailIgnoreCase(email);
+        return userByEmail.orElseThrow(() -> new ApiException("User not Found"));
+    }
+
+    private ConfirmationEntity getUserConfirmation(String key) {
+        return confirmationRepository.findByKey(key).orElseThrow(() -> new ApiException("Confirmation Key not Found"));
+    }
+
+    //.......................
 
     //Creating helper method for the createNewUser method
     private UserEntity createNewUser(String firstName, String lastName, String email) {
