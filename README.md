@@ -1388,6 +1388,7 @@ because we already set the token to be deleted after verifying a user.
 > 
 > ![img_6.png](src%2Fmain%2Fresources%2Fassets%2Fimg_6.png)
 
+#### Overriding the User Details Services
 So what we going to do now is, instead of using spring default users and password, we are going to create our own 
 users like a custom user so we going to have to to override the default user manager system.
     So what we will first did was create a new package called security then inside this secueity package, 
@@ -1401,9 +1402,51 @@ and now when we run it we got the same error without the unauthorized 401 error.
 so now if i go to the browser and i then enter the credentials we will get something like this: 
 ![img_8.png](src%2Fmain%2Fresources%2Fassets%2Fimg_8.png)
 ![img_6.png](src%2Fmain%2Fresources%2Fassets%2Fimg_6.png)
-
+```java
+ @Bean
+    public UserDetailsService userDetailsService() {
+        //First User
+        var daniel = User.withDefaultPasswordEncoder()
+                .username("daniel")
+                .password("letdanin")
+                .roles("USER")
+                .build();
+        //Second User
+        var james = User.withDefaultPasswordEncoder()
+                .username("james")
+                .password("letjamesin")
+                .roles("USER")
+                .build();
+        return new InMemoryUserDetailsManager(List.of(daniel, james)); //Override the user in memory user details with our custom user.
+    }
+```
 So far we only did the User Details service part, the other three are still on the default (Filters, Authentication
 Manager, Authentication Provider). The only thing weve override is the in memory user details.
+
+#### Override the Authentication Provider and Authentication Manager
+    In other fro use to override the `daoauthenticationProvider` we had to make use of the Authentication Manager
+    because they work hand in hand with each other, so then the `daoauthentication` provider override the 
+    `userDetailsProvider` values then return the new value. 
+So when we run the application and pass in the same user details we got the same message as the last run, so we pass
+the filter, so far we have overriden the `AuthenticationManager` and `AuthenticationProvider` with the same method
+at the same time and then the `UserDetailServices`. 
+```java
+  @Bean
+    public AuthenticationManager authenticationManager(UserDetailsService userDetailsService) {
+        DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
+        daoAuthenticationProvider.setUserDetailsService(userDetailsService);
+        return new ProviderManager(daoAuthenticationProvider);
+    }
+```
+By default all of the endpoint are locked by the springboot authentication, so what we hav to do now is 
+let springboot know we dont want all path (register, login, password) to go through the filter and only just 
+send it to the controller because we want the user to be authenticated in other to access the login or regsiter, 
+or reset password. 
+> All endpoints in the application are all secure by springboot, we can also tell spring security to not secure a 
+> specific endpoint and if a request comes in for a specify endpoint just let the request go through and then send 
+> the response back. 
+
+#### Add filter to open up some endpoints
 
 
 
