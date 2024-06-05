@@ -1366,4 +1366,47 @@ So the next thing we will be working on is the login functionalities.
 ![img_3.png](src%2Fmain%2Fresources%2Fassets%2Fimg_3.png)
 In this login i am going to make use of spring security.
 
+Note
+For Securing our API, I will be using the Custom Token Implementation of Spring Security becuase spring 
+security is very powerful and its uses in alot on enterprise application. 
+### Custom Token Implememtation 
+So initially I had the dependency for spring security commented, so the first thing i will do is uncomment 
+the dependency then i will run the application. 
+After running the application a password was generated, and now i tried to get the the register user with the token
+but it gave an `401 Unauthorized` error this is becuase we enables spring security and by default spring
+gave us a username and a password which was generated when we run the application so now the best approach to getting the
+user will be.
+Choosing  the choosing auth and then using the basic auth option in postman, this will ask to enter the user name 
+and the password for authentication. 
+So the username will be `user` because it is by default and the password will be the password generated at runtime. 
+When we then send the request to get the user again we then, get the error user not found which I expected to get 
+because we already set the token to be deleted after verifying a user. 
+![img_4.png](src%2Fmain%2Fresources%2Fassets%2Fimg_4.png)
+> Note
+> By default spring security gives a form authentication with the basic auth so its basic and form authentication.  
+> ![img_5.png](src%2Fmain%2Fresources%2Fassets%2Fimg_5.png)
+> 
+> ![img_6.png](src%2Fmain%2Fresources%2Fassets%2Fimg_6.png)
+
+So what we going to do now is, instead of using spring default users and password, we are going to create our own 
+users like a custom user so we going to have to to override the default user manager system.
+    So what we will first did was create a new package called security then inside this secueity package, 
+    everything related to the security is inside this package, so then we created an `FilterChainConfiguaration`
+    inside this class we created two custom users `daniel` and `james` they each have their username and password. 
+    After we create these user we then return this user in other to override the default InMemoryUserDetailsManager
+    users. 
+Now we will run the aplication again and try to filln the form with these customer user credentials, 
+and now when we run it we got the same error without the unauthorized 401 error.
+![img_7.png](src%2Fmain%2Fresources%2Fassets%2Fimg_7.png) 
+so now if i go to the browser and i then enter the credentials we will get something like this: 
+![img_8.png](src%2Fmain%2Fresources%2Fassets%2Fimg_8.png)
+![img_6.png](src%2Fmain%2Fresources%2Fassets%2Fimg_6.png)
+
+So far we only did the User Details service part, the other three are still on the default (Filters, Authentication
+Manager, Authentication Provider). The only thing weve override is the in memory user details.
+
+
+
+
+
 
