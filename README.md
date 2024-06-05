@@ -1447,9 +1447,35 @@ or reset password.
 > the response back. 
 
 #### Add filter to open up some endpoints
+So we created a `SecurityFilterChain` method that basically helps in filtering request so if a specify 
+request matches a specify pattern for examples url endpoint "user/test" it will permit the request however 
+other requst will be authorized. 
+```java
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        return http
+                .authorizeHttpRequests(request ->
+                        request.requestMatchers("/user/test").permitAll() //For every http request that matches a specific pattern permit them.
+                                .anyRequest().authenticated()) //Any other user that does match "Authenticate them"
+                .build();
+    }
+```
+Run the application and send a GET request to: 
+```http request
+http://localhost:8085/user/test
+```
+And you can see we got a 403 Forbidden error which mean we dont have permission this because we have no route defined in 
+the application, if we have a route define we will get a 500 server error but so far is it working.
+![img_9.png](src%2Fmain%2Fresources%2Fassets%2Fimg_9.png)
 
+So what we will do now is create a test endpoint  in the controller o(`userResource`), just to test the route and filter once 
+more. So now if we go back and re test the request we should get a 200 reponse back.
+![img_10.png](src%2Fmain%2Fresources%2Fassets%2Fimg_10.png)
+As you can see we got a 200 response back because we told spring to not secure the endpoint. 
 
+So what we want to do next is take control of the recieving the request to log a user inton the application, 
+we have some user define, we have some configuration going on but we are still not recieving any username 
+adn password, how can we get more control to do this, so we want to create a cmontroler son that we can send
+our login user to this controller.
 
-
-
-
+#### Recieving the request (User username and password)

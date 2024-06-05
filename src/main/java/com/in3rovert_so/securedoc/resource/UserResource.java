@@ -34,6 +34,11 @@ public class UserResource {
         userService.verifyAccountKey(key);
         return ResponseEntity.ok().body(getResponse(request, emptyMap(), "Account Verified. ", OK));
     }
+  // TODO: Testing and Building a simple response
+    @GetMapping("/test")
+    public ResponseEntity<Response>test() {
+        return ResponseEntity.ok().build();
+    }
 
     private URI getUri() {
         return URI.create("");

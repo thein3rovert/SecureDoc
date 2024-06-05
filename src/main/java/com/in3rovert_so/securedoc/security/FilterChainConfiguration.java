@@ -8,10 +8,12 @@ import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configurers.userdetails.DaoAuthenticationConfigurer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.SecurityFilterChain;
 
 import java.util.List;
 
@@ -21,6 +23,15 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FilterChainConfiguration {
 
+    //Todo: 3. Filter the endpoint (Open up some endPoints)
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        return http
+                .authorizeHttpRequests(request ->
+                        request.requestMatchers("/user/test").permitAll() //For every http request that matches a specific pattern permit them.
+                                .anyRequest().authenticated()) //Any other user that does match "Authenticate them"
+                .build();
+    }
     //Overriding the Auth Provider
     //Todo: 2. Override the Auth Provider and the Authentication Manager
     @Bean
