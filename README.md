@@ -1,8 +1,8 @@
-## Entity Listener for Spring Boot
-[Entity: Auditable -> exception: ApiException -> domain: RequestContext]
-## Todo for application
-Need to audit everything we do for the application
+## SecureDoc Full Stack Application
+> Note: THIS README is still under going documentation and is not ready yet but will be updated as and when it is ready.
+> However, it is still useful but you can always use it as a guild to understand the application adnwhat was done. 
 
+Need to audit everything we do for the application
 Create an auditable (abstract) class this class can be extended to create an
 entity listener for any entity. Auditable --> all entities will inherit from this class. so
 when every we try to save an entity in the database all of the logic inside of the auditable
@@ -17,12 +17,8 @@ will fail. (Ongoing). We can get information from this class but we cant set inf
     private LocalDateTime createdAt; //WHO UPDATED IT at what time
     private LocalDateTime updatedAt; //WHO UPDATED IT at what time.
 ```
-This is really all we need for the super class so that all the subclasses can inherit from this 
-is also going to be an entity that jpa will manage for us. 
-
-What we have to do now is add the annotation for the required fields.
--
-- **Id**
+This are the fields needed for the super class so that all the subclasses can inherit from this 
+is also going to be an entity that jpa will manage for us, what we have to do now is add the annotation for the required fields.
 
 ```java
     @Id
@@ -52,11 +48,11 @@ Explain each annotations and why you need them.
 
 ---
 
-- What we need to do now is implement the logic for prepersit or preupdate do that before we presit 
+### Presist and PreUpdate [Refactoring Stopped here]
+- What we need to do now is implement the logic for prepersit or preupdate so that before we presit 
 for any entity we check for all of the field we are setting because we cant save anything in the database 
 if we dont have who created it or who updated it or the date they were created or updated. 
 
-- PrePersist and PreUpdate.
 ```java
  @PrePersist
     public void beforePersist() {
@@ -356,6 +352,7 @@ End 21/05/2024.
 
 ---
 Formating CTRL + ALT + L
+
 ---
 Date: 22/05/2024
 TODO: Define the enum to take care of the roles and the table.
@@ -1357,49 +1354,114 @@ are disables initially when they account is created.
 
     } 
 ```
-So far we have been able to do this: 
-![img_2.png](src%2Fmain%2Fresources%2Fassets%2Fimg_2.png)
-Though i havent done: User should be able to login into the application that because i havent created the UI 
-of the application but pretty much the backend for it has been created. 
+### Creating the Security Filter Chain
+First we created a security filter chain that helps to filter the request coming 
+from the client and then send it to the next filter. However for testing purpose i want to 
+able to permit some path to go through the filter so it doesnt get authenticated.
+```java
+  @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        return http
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(request ->
+                        request.requestMatchers("/user/login").permitAll() //For every http request that matches a specific pattern permit them.
+                                .anyRequest().authenticated()) //Any other user that does match "Authenticate them"
+                .build();
+    }
+```
+### Creating the Authentication Manager
+After creating the security filter chain we can now create the Authentiucation Manager, this will
+help us to manager the authentication of the user, the authentication manager will recieve the
+request for the filter chain and attemps to authentiate the user based on the provided credentials. 
 
-So the next thing we will be working on is the login functionalities. 
+```java
+ public AuthenticationManager authenticationManager(UserDetailsService userDetailsService) {
+        DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
+        daoAuthenticationProvider.setUserDetailsService(userDetailsService);
+        return new ProviderManager(daoAuthenticationProvider);
+    }
+```
+The Authentication manager use the authentication provider tohandle the authentication process thats 
+why i am passing in the userdetailsservcies as a param. The authentication provider has a
+`doauthenticationprovider` method that will attempt to authenticate the user so we have to pass in the 
+userdetails to the dao authentication provider which will then attempt to `authenticate` the user.
+The `DoaAuthenticationProvider` has an `authenticate` method, this method has `unauthenticated` and `authenticated`.
+
+### PostMappinng method for login
+```java
+    @PostMapping("/login")
+    public ResponseEntity<?>test(@RequestBody UserRequest user) {
+        UsernamePasswordAuthenticationToken unauthenticated = UsernamePasswordAuthenticationToken.unauthenticated(user.getEmail(), user.getPassword());
+        Authentication authenticate = authenticationManager.authenticate(unauthenticated);
+        return ResponseEntity.ok().body(Map.of("user", authenticate));
+    }
+```
+This code snippet defines a POST endpoint for user login. It receives a JSON request body containing user credentials
+(user.getEmail() and user.getPassword()). It creates an UsernamePasswordAuthenticationToken object with the provided 
+email and password, and then authenticates the user using the authenticationManager. Finally, it returns a ResponseEntity with an OK status and a response body containing a map with the key "user" and the value of the authenticated user.
+The `unauthenticated` method is called when the user does not exist in the database.
+```java
+    public static UsernamePasswordAuthenticationToken unauthenticated(Object principal, Object credentials) {
+        return new UsernamePasswordAuthenticationToken(principal, credentials);
+    }
+```
+The `authenticated` method is called when the user exists in the database.
+```java
+   public static UsernamePasswordAuthenticationToken authenticated(Object principal, Object credentials, Collection<? extends GrantedAuthority> authorities) {
+        return new UsernamePasswordAuthenticationToken(principal, credentials, authorities);
+    }
+```
+### Breakdown
+Now we have created our won Security Filter Chain, Authentication Manager, UserDetailsService and PostMapping for login, so we 
+have taken the responsibility from spring security, now what i need to do next is create our own 
+authentication provider so we can then pass it the userdatails comming from the database.
+
+
+## Additional Notes 
+### Testing Spring Security(Learning Before Impl)
+So far we have been able to do this:
+![img_2.png](src%2Fmain%2Fresources%2Fassets%2Fimg_2.png)
+Though i havent done: User should be able to login into the application that because i havent created the UI
+of the application but pretty much the backend for it has been created.
+
+So the next thing we will be working on is the login functionalities.
 ![img_3.png](src%2Fmain%2Fresources%2Fassets%2Fimg_3.png)
 In this login i am going to make use of spring security.
 
 Note
-For Securing our API, I will be using the Custom Token Implementation of Spring Security becuase spring 
-security is very powerful and its uses in alot on enterprise application. 
-### Custom Token Implememtation 
-So initially I had the dependency for spring security commented, so the first thing i will do is uncomment 
-the dependency then i will run the application. 
+For Securing our API, I will be using the Custom Token Implementation of Spring Security becuase spring
+security is very powerful and its uses in alot on enterprise application.
+### Custom Token Implememtation
+So initially I had the dependency for spring security commented, so the first thing i will do is uncomment
+the dependency then i will run the application.
 After running the application a password was generated, and now i tried to get the the register user with the token
 but it gave an `401 Unauthorized` error this is becuase we enables spring security and by default spring
 gave us a username and a password which was generated when we run the application so now the best approach to getting the
 user will be.
-Choosing  the choosing auth and then using the basic auth option in postman, this will ask to enter the user name 
-and the password for authentication. 
-So the username will be `user` because it is by default and the password will be the password generated at runtime. 
-When we then send the request to get the user again we then, get the error user not found which I expected to get 
-because we already set the token to be deleted after verifying a user. 
+Choosing  the choosing auth and then using the basic auth option in postman, this will ask to enter the user name
+and the password for authentication.
+So the username will be `user` because it is by default and the password will be the password generated at runtime.
+When we then send the request to get the user again we then, get the error user not found which I expected to get
+because we already set the token to be deleted after verifying a user.
 ![img_4.png](src%2Fmain%2Fresources%2Fassets%2Fimg_4.png)
 > Note
 > By default spring security gives a form authentication with the basic auth so its basic and form authentication.  
 > ![img_5.png](src%2Fmain%2Fresources%2Fassets%2Fimg_5.png)
-> 
+>
 > ![img_6.png](src%2Fmain%2Fresources%2Fassets%2Fimg_6.png)
 
 #### Overriding the User Details Services
-So what we going to do now is, instead of using spring default users and password, we are going to create our own 
+So what we going to do now is, instead of using spring default users and password, we are going to create our own
 users like a custom user so we going to have to to override the default user manager system.
-    So what we will first did was create a new package called security then inside this secueity package, 
-    everything related to the security is inside this package, so then we created an `FilterChainConfiguaration`
-    inside this class we created two custom users `daniel` and `james` they each have their username and password. 
-    After we create these user we then return this user in other to override the default InMemoryUserDetailsManager
-    users. 
-Now we will run the aplication again and try to filln the form with these customer user credentials, 
+So what we will first did was create a new package called security then inside this secueity package,
+everything related to the security is inside this package, so then we created an `FilterChainConfiguaration`
+inside this class we created two custom users `daniel` and `james` they each have their username and password.
+After we create these user we then return this user in other to override the default InMemoryUserDetailsManager
+users.
+Now we will run the aplication again and try to filln the form with these customer user credentials,
 and now when we run it we got the same error without the unauthorized 401 error.
-![img_7.png](src%2Fmain%2Fresources%2Fassets%2Fimg_7.png) 
-so now if i go to the browser and i then enter the credentials we will get something like this: 
+![img_7.png](src%2Fmain%2Fresources%2Fassets%2Fimg_7.png)
+so now if i go to the browser and i then enter the credentials we will get something like this:
 ![img_8.png](src%2Fmain%2Fresources%2Fassets%2Fimg_8.png)
 ![img_6.png](src%2Fmain%2Fresources%2Fassets%2Fimg_6.png)
 ```java
@@ -1429,7 +1491,7 @@ Manager, Authentication Provider). The only thing weve override is the in memory
     `userDetailsProvider` values then return the new value. 
 So when we run the application and pass in the same user details we got the same message as the last run, so we pass
 the filter, so far we have overriden the `AuthenticationManager` and `AuthenticationProvider` with the same method
-at the same time and then the `UserDetailServices`. 
+at the same time and then the `UserDetailServices`.
 ```java
   @Bean
     public AuthenticationManager authenticationManager(UserDetailsService userDetailsService) {
@@ -1438,18 +1500,18 @@ at the same time and then the `UserDetailServices`.
         return new ProviderManager(daoAuthenticationProvider);
     }
 ```
-By default all of the endpoint are locked by the springboot authentication, so what we hav to do now is 
-let springboot know we dont want all path (register, login, password) to go through the filter and only just 
-send it to the controller because we want the user to be authenticated in other to access the login or regsiter, 
-or reset password. 
-> All endpoints in the application are all secure by springboot, we can also tell spring security to not secure a 
-> specific endpoint and if a request comes in for a specify endpoint just let the request go through and then send 
-> the response back. 
+By default all of the endpoint are locked by the springboot authentication, so what we hav to do now is
+let springboot know we dont want all path (register, login, password) to go through the filter and only just
+send it to the controller because we want the user to be authenticated in other to access the login or regsiter,
+or reset password.
+> All endpoints in the application are all secure by springboot, we can also tell spring security to not secure a
+> specific endpoint and if a request comes in for a specify endpoint just let the request go through and then send
+> the response back.
 
 #### Add filter to open up some endpoints
-So we created a `SecurityFilterChain` method that basically helps in filtering request so if a specify 
-request matches a specify pattern for examples url endpoint "user/test" it will permit the request however 
-other requst will be authorized. 
+So we created a `SecurityFilterChain` method that basically helps in filtering request so if a specify
+request matches a specify pattern for examples url endpoint "user/test" it will permit the request however
+other requst will be authorized.
 ```java
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -1460,22 +1522,76 @@ other requst will be authorized.
                 .build();
     }
 ```
-Run the application and send a GET request to: 
+Run the application and send a GET request to:
 ```http request
 http://localhost:8085/user/test
 ```
-And you can see we got a 403 Forbidden error which mean we dont have permission this because we have no route defined in 
+And you can see we got a 403 Forbidden error which mean we dont have permission this because we have no route defined in
 the application, if we have a route define we will get a 500 server error but so far is it working.
 ![img_9.png](src%2Fmain%2Fresources%2Fassets%2Fimg_9.png)
 
-So what we will do now is create a test endpoint  in the controller o(`userResource`), just to test the route and filter once 
+So what we will do now is create a test endpoint  in the controller o(`userResource`), just to test the route and filter once
 more. So now if we go back and re test the request we should get a 200 reponse back.
 ![img_10.png](src%2Fmain%2Fresources%2Fassets%2Fimg_10.png)
-As you can see we got a 200 response back because we told spring to not secure the endpoint. 
+As you can see we got a 200 response back because we told spring to not secure the endpoint.
 
-So what we want to do next is take control of the recieving the request to log a user inton the application, 
-we have some user define, we have some configuration going on but we are still not recieving any username 
+So what we want to do next is take control of the recieving the request to log a user inton the application,
+we have some user define, we have some configuration going on but we are still not recieving any username
 adn password, how can we get more control to do this, so we want to create a cmontroler son that we can send
 our login user to this controller.
 
 #### Recieving the request (User username and password)
+We created a POSTMAPPING post request in other to login the user, so if we want to login we have to go
+to `user/login`.
+```java
+    @PostMapping("/login")
+    public String login(@RequestBody User user, HttpServletRequest request) {
+        authenticationManager.authenticate(UsernamePasswordAuthenticationToken.unauthenticated(user.getEmail(), user.getPassword()));
+        return ResponseEntity.ok().build();
+```
+This method acts as a login endpoint. It expects a POST request to "/login" with a request body containing user
+credentials (likely in JSON format).
+It attempts to authenticate the user using the provided username and password through Spring Security's AuthenticationManager.
+If authentication is successful (specific logic might vary based on your implementation), it returns a successful
+HTTP response (status code 200) without an additional response body.
+
+So now we have taken control of the recieving the request to log a user into the application, we have our own
+endpoint to login the user.
+```java
+  @PostMapping("/login")
+    public ResponseEntity<Response>test(@RequestBody UserRequest user) {
+        authenticationManager.authenticate(UsernamePasswordAuthenticationToken.unauthenticated(user.getEmail(), user.getPassword()));
+        return ResponseEntity.ok().build();
+    }
+```
+
+we have the AuthenticationManager to authenticate the user.
+```java
+public class UserResource {
+    private final UserService userService;
+    private final AuthenticationManager authenticationManager;
+```
+And we are calling the AuthenticationManager because we have define it in the `SecurityFilterChain` method.
+```java
+    @Bean
+    public AuthenticationManager authenticationManager(UserDetailsService userDetailsService) {
+        DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
+        daoAuthenticationProvider.setUserDetailsService(userDetailsService);
+        return new ProviderManager(daoAuthenticationProvider);
+    }
+```
+![img_11.png](src%2Fmain%2Fresources%2Fassets%2Fimg_11.png)
+Now that we have taken control of the user login, we also have to take control of doing our own checks,
+like checking if the password maches or not and if the password did not match we log a specific error, by defuly
+spring has default password encoder that checks if the password matches and if not it returns a `bad credentials` message.
+![img_12.png](src%2Fmain%2Fresources%2Fassets%2Fimg_12.png)
+But how do we takes this functinalities from spring, how do we take control of it.
+
+
+## Main Spring Security Implementation 
+### Logic Features Intro
+Todo: Load the Schema.sql and Data.sql in other to create the tables and add constraints.
+### Authentication Part 1
+Now we will implement the following functinalities using what i've learn 
+in spring security. 
+![img_13.png](src%2Fmain%2Fresources%2Fassets%2Fimg_13.png)
