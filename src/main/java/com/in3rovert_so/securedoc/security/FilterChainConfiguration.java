@@ -38,26 +38,40 @@ public class FilterChainConfiguration {
     //Todo: 2. Override the Auth Provider and the Authentication Manager
     @Bean
     public AuthenticationManager authenticationManager(UserDetailsService userDetailsService) {
-        DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
-        daoAuthenticationProvider.setUserDetailsService(userDetailsService);
-        return new ProviderManager(daoAuthenticationProvider);
+        MyOwnAuthenticationProvider myOwnAuthenticationProvider = new MyOwnAuthenticationProvider(userDetailsService);
+       // daoAuthenticationProvider.setUserDetailsService(userDetailsService);
+        return new ProviderManager(myOwnAuthenticationProvider);
     }
     //Todo: 1. We need to tell spring these are our users
     //Overriding the User details Services
+//    @Bean
+//    public UserDetailsService userDetailsService() {
+//        //First User
+//        var daniel = User.withDefaultPasswordEncoder()
+//                .username("daniel")
+//                .password("{noop}letdanin")
+//                .roles("USER")
+//                .build();
+//        //Second User
+//        var james = User.withDefaultPasswordEncoder()
+//                .username("james")
+//                .password("{noop}letjamesin")
+//                .roles("USER")
+//                .build();
+//        return new InMemoryUserDetailsManager(List.of(daniel, james)); //Override the user in memory user details with our custom user.
+//    }
+
     @Bean
-    public UserDetailsService userDetailsService() {
-        //First User
-        var daniel = User.withDefaultPasswordEncoder()
-                .username("daniel")
-                .password("letdanin")
-                .roles("USER")
-                .build();
-        //Second User
-        var james = User.withDefaultPasswordEncoder()
-                .username("james")
-                .password("letjamesin")
-                .roles("USER")
-                .build();
-        return new InMemoryUserDetailsManager(List.of(daniel, james)); //Override the user in memory user details with our custom user.
+    public UserDetailsService inMemoryUserDetailsManager() {
+        return  new InMemoryUserDetailsManager(
+                User.withUsername("Daniel")
+                        .password("letdanin")
+                        .roles("USER")
+                        .build(),
+                User.withUsername("james")
+                        .password("letjamesin")
+                        .roles("USER")
+                        .build()
+        );
     }
 }

@@ -1587,6 +1587,92 @@ spring has default password encoder that checks if the password matches and if n
 ![img_12.png](src%2Fmain%2Fresources%2Fassets%2Fimg_12.png)
 But how do we takes this functinalities from spring, how do we take control of it.
 
+### Creating custm Authentication Provider
+Whenever we are going to take control of the authentication provider we need to give spring security 
+our own a userdetails and also an unauthenticated authentication which is going to be our `UsernamePasswordAuthenticationToken`
+
+This authenticate method is responsible  for verifying the user's credentials and returning an authenticated Authentication object 
+if the credentials are valid.
+
+If the credentials do not match, the method throws a BadCredentialsException indicating that the user is unable to log in.
+It compares the credentials the credentials of the user coming from the request with the credentials of the user retrieved from the database.
+If the credentials match, the method returns a UsernamePasswordAuthenticationToken object with the authenticated user.
+
+```java
+    @Override
+    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+        var user = (UsernamePasswordAuthenticationToken) authentication; //User coming in from the request.
+        //Comparing both users from db and User from Request
+        var userFromDb = userDetailsService.loadUserByUsername((String) user.getPrincipal()); //Load user
+        //if the user credemtials is the same as user from Db credentials.
+        if((user.getCredentials()).equals(userFromDb.getPassword())) {
+            return UsernamePasswordAuthenticationToken.authenticated(userFromDb, "[PASSWORD PROTECTED]", null);
+        }
+        throw new BadCredentialsException("Unable to login");
+    }
+```
+The next thing we have to work on now is the Authority, we need this because we are going to define
+the role of the user in the database.
+
+So now that we have created our own authentication provider we have to let spring knon we have our own 
+authentication provider and since its a bean that makes it easier. 
+In other to do that we need the tell the manager becuase its the one that is been used to do the authentication.
+```java
+ @Bean
+    public AuthenticationManager authenticationManager(UserDetailsService userDetailsService) {
+        MyOwnAuthenticationProvider myOwnAuthenticationProvider = new MyOwnAuthenticationProvider(userDetailsService);
+        return new ProviderManager(myOwnAuthenticationProvider);
+    }
+```
+
+So now we have our Security Filter chain, UserDetails, Authentication Manager, Authentication Provider. 
+So now when we run the application we got a 403 error
+> Tip 
+> Keep in mind that Spring send 403 when ever there is any error in the application
+
+Spring was failig because it wasnt able to do the comparison of the credentials, what i did to fix that is 
+basically the password coming from the authority(users) to string. 
+```java
+var user = (UsernamePasswordAuthenticationToken) authentication; //User coming in from the request.
+        //Comparing both users from db and User from Request
+        var userFromDb = userDetailsService.loadUserByUsername((String) user.getPrincipal());
+        //if the user credentials is the same as user from Db credentials.
+        var password = (String)user.getCredentials(); 
+        //if((user.getCredentials()).equals(userFromDb.getPassword())) {
+        if(password.equals(userFromDb.getPassword())){
+            return UsernamePasswordAuthenticationToken.authenticated(userFromDb, "[PASSWORD PROTECTED]", userFromDb.getAuthorities());
+        }
+```
+And also because we have an encoder (defaultpasswordencoder), what i did to fix that is basically cancle our the 
+password encoder and then pass in {noop} signifing that the password is not encrypted.
+```java
+    @Bean
+    public UserDetailsService inMemoryUserDetailsManager() {
+        return  new InMemoryUserDetailsManager(
+                User.withUsername("Daniel")
+                        .password("{noop}letjamesin")
+                        .roles("USER")
+                        .build(),
+                User.withUsername("Daniel")
+                        .password("{noop}letjamesin")
+                        .roles("USER")
+                        .build()
+        );
+    }
+```
+Then we rerun, because we dont have any password encoder at all we dont need the `{noop}`. 
+We are able to login sucessfully: 
+![img_15.png](src%2Fmain%2Fresources%2Fassets%2Fimg_15.png)
+and if we provide a bad password, we get a 403 forbidden error
+![img_16.png](src%2Fmain%2Fresources%2Fassets%2Fimg_16.png)
+
+And that one approach to configure spring security for a more beoader understading I design a PKM explaining 
+Spring Security. 
+![img_17.png](src%2Fmain%2Fresources%2Fassets%2Fimg_17.png)
+
+
+
+
 
 ## Main Spring Security Implementation 
 ### Logic Features Intro
