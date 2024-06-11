@@ -1672,8 +1672,6 @@ Spring Security.
 
 
 
-
-
 ## Main Spring Security Implementation 
 ### Logic Features Intro
 Todo: Load the Schema.sql and Data.sql in other to create the tables and add constraints.
@@ -1681,3 +1679,79 @@ Todo: Load the Schema.sql and Data.sql in other to create the tables and add con
 Now we will implement the following functinalities using what i've learn 
 in spring security. 
 ![img_13.png](src%2Fmain%2Fresources%2Fassets%2Fimg_13.png)
+
+### Api Authentication
+This is the equivalent of the usernamePasswordAuthenticationToken
+It contains the user that we are going to be working with in the application when we are not dealing with the application or saving to the database.
+We will have some kind of mapper that is going to take the user from the database and then maps
+it to this class(User class) and vise versal.
+
+So now that we have created the user class,we need to extend the authentitcation and make sure we can pput 
+in the same pattern that we saw with `usernamepasswordAuthenticationToken`.
+We extended the abstract authentication token because that class has some certain method that are just convinient working 
+with. 
+
+We created two constructor, the one we vare going to call when ever we are are going to start the authentication, 
+```java
+    public ApiAuthentication(String email, String password) {
+        super(AuthorityUtils.NO_AUTHORITIES);
+        this.password = email;
+        this.email = password;
+        this.authenticated = false;
+    }
+```
+And the one we call when the user has been authenticated
+```java
+    public ApiAuthentication(User user, Collection<? extends GrantedAuthority> authorities) {
+        super(authorities);
+        this.user = user;
+        this.password = PASSWORD_PROTECTED;
+        this.email = EMAIL_PROTECTED;
+        this.authenticated = true;
+    }
+```
+So we dont want to call the constructor diretly so we make them public and then create two public 
+static `unauthenticated and authenticated method` 
+The unauthenticated method is returning the email and password because that is what we passes in the request and when we staring the 
+authentication.
+```java
+  public static ApiAuthentication unauthenticated (String email, String password) {
+        return new ApiAuthentication(email, password);
+    }
+```
+And the authenticated is returning the user and the authorities, we use this when the authentication is successful. 
+We will call this so that we can create the actual fully authenticated user.
+```java
+    public static ApiAuthentication authenticated (User user, Collection<? extends GrantedAuthority> authorities) {
+        return new ApiAuthentication(user, authorities);
+    }
+```
+Also becuase we dont want the password to be seen we passed in the PASSWORD PROTECTED to the credentials.
+We then created a `setAuthentication` method because we want to make sure that they call the authentication 
+because we dont want anyone to be able to set the authentication with a setter so we have to make sure that.
+```java
+    @Override
+    public void setAuthenticated(boolean authenticated) {
+        throw new ApiException("You cannot set authentication");
+    }
+
+```
+Then we also create the `isAuthenticated` method and we retuen the autheticated boolean values for when ever we 
+have a fully authenticated user. 
+```java
+    @Override
+    public boolean isAuthenticated() {
+        return this.authenticated;
+    }
+```
+So that is all for my authentication so i have my own class with my authentication and then when ever we 
+want we can pass in email and the password whenm ever we have an unAuthenticated authentication or Api 
+authentication or when ever the user is fully authentiacated we are going to call the constructor and pass in
+the user and also authorities, spring by defauklt needs the authorities so that why we are passing in the `super`
+```java
+  private ApiAuthentication(String email, String password) {
+        super(AuthorityUtils.NO_AUTHORITIES);
+```
+and also the contructors are private so that they can be use and we are forcing everyone to use the 
+unauthenticated and then the authenticated helper method.Thats all we dont have to rely on the
+`usernamepasswordauthenticationtoken` given by spring security. 
