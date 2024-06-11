@@ -1755,3 +1755,46 @@ the user and also authorities, spring by defauklt needs the authorities so that 
 and also the contructors are private so that they can be use and we are forcing everyone to use the 
 unauthenticated and then the authenticated helper method.Thats all we dont have to rely on the
 `usernamepasswordauthenticationtoken` given by spring security. 
+
+### Login Filter
+What we want to do now is create a filter similar to the `UsernamePasswordAuthenticationFilter` this ist he filter 
+class that intercept the request coming in and then it tries to do the authentication and spring is using a 
+filter to do this so its only write that we also use a filter with the same pattern they had in mind. 
+
+So now instead of having our endpoint in our resources we are nnot going to do it this way
+```java
+//Before
+    @PostMapping("/login")
+    public ResponseEntity<?>test(@RequestBody UserRequest user) {
+```
+We are going to have this endpoints in the filter and then we are going to authenticate all the request coming in using 
+the filter so thats what I am going to be working on next. 
+
+We created a new class `Authentication filter` extending the abstractAuthenticationProcessingFilter then reason why I am extending
+this class is because it is a good class to use if you just want to do the authentication. 
+
+After we implemented the `atemptAuthentication` this is the method that gets called when we want to initiates the authentication 
+process. 
+
+Then we created a constructor this helps whenever we want to pass something to the super class..
+the authenticationFilter basically helps to tell the super class that for any Post Request that comes for the 
+path(/user/login) then it's the ome it should listen-to to trigger the `attemptAuthentication` method.
+```java
+ public AuthenticationFilter(AuthenticationManager authenticationManager, UserService, JwtService jwtService) {
+        super(new AntPathRequestMatcher("/user/login", POST.name()), authenticationManager);
+    }
+```
+then we importted the userservice and the Jwtservice, the `userServices` for when we need to featch the user whenever
+we get their username from the request and we need to update their login attemps and do some other things.
+
+So now we need to define some method in the userservices so that we can update the login attempt and we are also going to 
+need the JWT services so that we can pass in a token to the response. 
+For the response we implement another method called the `successfulAuthentication` this gets called when ever the 
+authenticamtion is successful.
+
+So far the class is is listening on user login and then its going to call the `attemptAuthentication` and if the
+authentication is successful, it going to call `successfulAuthentication`.
+
+So now we are going to be working on the userServices so that we can update the login attempt of the user. 
+
+
