@@ -1,5 +1,6 @@
 package com.in3rovert_so.securedoc.security;
 
+import com.in3rovert_so.securedoc.enumeration.LoginType;
 import com.in3rovert_so.securedoc.service.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -15,6 +16,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import java.io.IOException;
 
+import static com.in3rovert_so.securedoc.enumeration.LoginType.LOGIN_ATTEMPT;
 import static org.springframework.http.HttpMethod.POST;
 
 @Slf4j
@@ -30,6 +32,7 @@ public class AuthenticationFilter extends AbstractAuthenticationProcessingFilter
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException, IOException, ServletException {
+        userService.updateLoginAttempt("danielolaibi@gmail.com", LOGIN_ATTEMPT);
         return null;
     }
 

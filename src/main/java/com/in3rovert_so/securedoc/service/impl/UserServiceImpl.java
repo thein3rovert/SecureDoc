@@ -1,11 +1,13 @@
 package com.in3rovert_so.securedoc.service.impl;
 
+import com.in3rovert_so.securedoc.domain.RequestContext;
 import com.in3rovert_so.securedoc.entity.ConfirmationEntity;
 import com.in3rovert_so.securedoc.entity.CredentialEntity;
 import com.in3rovert_so.securedoc.entity.RoleEntity;
 import com.in3rovert_so.securedoc.entity.UserEntity;
 import com.in3rovert_so.securedoc.enumeration.Authority;
 import com.in3rovert_so.securedoc.enumeration.EventType;
+import com.in3rovert_so.securedoc.enumeration.LoginType;
 import com.in3rovert_so.securedoc.event.UserEvent;
 import com.in3rovert_so.securedoc.exception.ApiException;
 import com.in3rovert_so.securedoc.repository.ConfirmationRepository;
@@ -63,6 +65,18 @@ public class UserServiceImpl implements UserService {
         userEntity.setEnabled(true);
         userRepository.save(userEntity);
         confirmationRepository.delete(confirmationEntity);
+    }
+
+    @Override
+    public void updateLoginAttempt(String email, LoginType loginType) {
+        var userEntity = getUserEntityByEmail(email);
+        RequestContext.setUserId(userEntity.getId()); //Incase something is saved iin the database we know who did.
+        switch (loginType) {
+            case LOGIN_ATTEMPT -> {
+
+            }
+            case LOGIN_SUCCESS -> {}
+        }
     }
 
     private UserEntity getUserEntityByEmail(String email) {

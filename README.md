@@ -1797,4 +1797,38 @@ authentication is successful, it going to call `successfulAuthentication`.
 
 So now we are going to be working on the userServices so that we can update the login attempt of the user. 
 
+### Filtering Login 2
+The first thing we are going to do is define some ENUM, we created a class called `LoginType` this class
+will give us the type of login that is happening.
+```java
+public enum LoginType {
+    LOGIN_ATTEMPT, LOGIN_SUCCESS
+}
+```
+Also I am not creating a converted for this enums because we are not saving these to the database so they dont 
+need to be converted to columns and all. 
+
+So in our userservices we created a new field called `updateLoginAttempt` we are creating this so we can basically update the 
+login attempt so then we can update how many times a userlogin into the application to keep track so that we can lock 
+their account. So it will update it in the database. 
+```java
+    void updateLoginAttempt(String email, LoginType loginType);
+```
+So now we will implement the method, in the method `updateLoginAttempt` we getting the user entity by email and also getting the
+user id so in case something is saved in the database we know who did it and then we are also creating a sitch to switch 
+between the loginTypes -> LOGIN ATTEMPT AND LOGIN_SUCCESS. 
+
+In the LOGIN ATTEMPT -> if its a login attept we need to check to see if the user has already been in the **_cache_**.
+The **_cache_** we dont have yet and still needs to create and then if the user is not the cache then we need to set 
+their login attempt to ZERO(0) then give a message ('Your account not locked'). 
+
+Otherwise we need to increase their login attempt and if their login attempt is bigger than 5, like 6 or greater then we 
+are going to lock their account. 
+
+In the LOGIN SUCCESS -> They are going to reset their account because we are going to set their login attempt to 
+ZERO(0) and them remove them from the cache and set their last login to the current instance because that means they logged in
+successfully. 
+
+So what we need now is the cache because if we dont have the cache, their is not way we are going ton knw if the user
+is in the **_cache_** of not and whatv login attempt that they have. 
 
