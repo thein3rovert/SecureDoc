@@ -1830,5 +1830,68 @@ ZERO(0) and them remove them from the cache and set their last login to the curr
 successfully. 
 
 So what we need now is the cache because if we dont have the cache, their is not way we are going ton knw if the user
-is in the **_cache_** of not and whatv login attempt that they have. 
+is in the **_cache_** of not and what login attempt that they have. 
+
+### User Cache
+So first go to your browser and type in `google guava maven`, click on the maven link showing first and 
+click on the latest version, I would advise version 33.0.0jre because its still the most stable version. 
+Then after the download head to your `pom` file and add the copied dependency.
+
+Then after that we created a new package called cache, anything cache related is going to be inside of this cache 
+package. Then we created a class called cacheStore that takes in a Key and a Value. 
+A key and a value  is uaully what is needed when every we need to cache anything in an application.
+
+Then we created a cnstructor called cacheStore, that takes in an expiry Duration and a TimeUnit, so 
+when ever we create a construtor for the type we want to cache, it going to build the cache and then wait for 
+a certain duration of time before it then expires. 
+
+The cache store takes the key and the value for the type of cache that you need to creates, so if you need to pass
+in a String, and then a User, the K(Key) will be the string and trhe V(Value) will be the User.
+```java
+public class CacheStore <K, V>{
+```
+so whatever value that we pass in the K and the V will be the value that is then passed into the catual cache. 
+```java
+ private final Cache<K, V> cache;
+```
+In other to create a cache with the use of tis constructor
+```java
+    public CacheStore(int expiryDuration, TimeUnit timeUnit) {
+        //Example: Expiry duration = 5, TimeUnit = Min -> 5 min
+        cache = CacheBuilder.newBuilder()
+                .expireAfterWrite(expiryDuration,timeUnit)
+                .concurrencyLevel(Runtime.getRuntime().availableProcessors())
+                .build();
+    }
+```
+- Getting from the cache
+Then whenever we need to get a value from the cache, is going to be through(by) the type that was 
+define as the value. Because we are getting the values and the key is going to be the key of the cache.
+Example: Let say the values is a User and then the Key is a String so if you waant to get the `user` you
+have to pass in the String which is the key. 
+```java
+   public V get(@NotNull K key) {
+        log.info("Retrieving from Cache with Key {} ", key.toString());
+        return cache.getIfPresent(key);
+    }
+```
+- Putting into the Cache
+```java
+    public void put(@NotNull K key, @NotNull V value) {
+        log.info("Putting into Cache with Key {} and Value {}", key.toString(), value.toString());
+        cache.put(key, value);
+    }
+```
+This method takes in the key and the value which are both needed in other to put something into the cache. 
+- Removing from the Cache
+```java
+    public void remove(@NotNull K key) {
+        log.info("Removing from Cache with Key {} ", key.toString());
+        cache.invalidate(key);
+    }
+```
+In we want to remove from the cache this method takes in a key and then helps to invalidate the 
+cache based on the key.
+So that is all about the cache store, how ever this is just a cache store we have to do an implementation 
+of the cache store. Thats what we going to be working on next. 
 
