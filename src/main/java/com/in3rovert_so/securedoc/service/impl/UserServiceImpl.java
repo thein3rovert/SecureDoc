@@ -1,5 +1,6 @@
 package com.in3rovert_so.securedoc.service.impl;
 
+import com.in3rovert_so.securedoc.cache.CacheStore;
 import com.in3rovert_so.securedoc.domain.RequestContext;
 import com.in3rovert_so.securedoc.entity.ConfirmationEntity;
 import com.in3rovert_so.securedoc.entity.CredentialEntity;
@@ -22,11 +23,13 @@ import org.springframework.context.ApplicationEventPublisher;
 //import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Objects;
 
 import static com.in3rovert_so.securedoc.enumeration.EventType.REGISTRATION;
 import static com.in3rovert_so.securedoc.utils.UserUtils.createUserEntity;
+import static java.time.LocalDateTime.now;
 
 @Service
 @Transactional(rollbackOn = Exception.class) //Any Exception that occurs roll everything back.
@@ -39,7 +42,7 @@ public class UserServiceImpl implements UserService {
     private final ConfirmationRepository confirmationRepository;
     //private final BCryptPasswordEncoder encoder;
     private final ApplicationEventPublisher publisher; //To public event when a user is created so that we can get an email.
-
+    private final CacheStore<String, Integer> userCache;
     @Override
     public void createUser(String firstName, String lastName, String email, String password) {
         var userEntity = userRepository.save(createNewUser(firstName, lastName, email)); //Todo: Create the createNewUser helper method.
@@ -70,13 +73,28 @@ public class UserServiceImpl implements UserService {
     @Override
     public void updateLoginAttempt(String email, LoginType loginType) {
         var userEntity = getUserEntityByEmail(email);
-        RequestContext.setUserId(userEntity.getId()); //Incase something is saved iin the database we know who did.
+        RequestContext.setUserId(userEntity.getId()); //Set the userId in the request context because we are going to save iin the database we know who did.
         switch (loginType) {
             case LOGIN_ATTEMPT -> {
-
+                //Todo: Check to see if the user is in the Cache
+                if(userCache.get(userEntity.getEmail()) == null) { //if the user is not in the cache yet, then their login attempt will be set to 0
+                    userEntity.setLoginAttempts(0);
+                    userEntity.setAccountNonLocked(true);
+                }
+                userEntity.setLoginAttempts(userEntity.getLoginAttempts() + 1); //If user is in the cache add 1 mto their login attempt
+                userCache.put(userEntity.getEmail(), userEntity.getLoginAttempts());//Then put their email and their login attempt in the cache.
+                if (userCache.get(userEntity.getEmail()) > 5) { //if the cache is greater than 5, meaning if the user login more than 5 time
+                    userEntity.setAccountNonLocked(false);//Lock the user account.
+                }
             }
-            case LOGIN_SUCCESS -> {}
+            case LOGIN_SUCCESS -> {
+                userEntity.setAccountNonLocked(true);
+                userEntity.setLoginAttempts(0);
+                userEntity.setLastLogin(now());
+                userCache.evict(userEntity.getEmail());
+            }
         }
+        userRepository.save(userEntity);
     }
 
     private UserEntity getUserEntityByEmail(String email) {

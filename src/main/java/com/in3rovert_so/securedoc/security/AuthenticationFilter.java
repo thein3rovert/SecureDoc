@@ -1,5 +1,9 @@
 package com.in3rovert_so.securedoc.security;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.in3rovert_so.securedoc.domain.ApiAuthentication;
+import com.in3rovert_so.securedoc.dtorequest.LoginRequest;
 import com.in3rovert_so.securedoc.enumeration.LoginType;
 import com.in3rovert_so.securedoc.service.UserService;
 import jakarta.servlet.FilterChain;
@@ -16,6 +20,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import java.io.IOException;
 
+import static com.fasterxml.jackson.core.JsonParser.Feature.AUTO_CLOSE_SOURCE;
 import static com.in3rovert_so.securedoc.enumeration.LoginType.LOGIN_ATTEMPT;
 import static org.springframework.http.HttpMethod.POST;
 
@@ -32,12 +37,22 @@ public class AuthenticationFilter extends AbstractAuthenticationProcessingFilter
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException, IOException, ServletException {
-        userService.updateLoginAttempt("danielolaibi@gmail.com", LOGIN_ATTEMPT);
-        return null;
+        try {
+            //Grab the user information to create the authentication after getting the login types
+            var user = new ObjectMapper().configure(AUTO_CLOSE_SOURCE, true).readValue(request.getInputStream(), LoginRequest.class);
+            userService.updateLoginAttempt(user.getEmail(), LOGIN_ATTEMPT);
+            var authentication = ApiAuthentication.unauthenticated(user.getEmail(), user.getPassword());
+            //Pass the credentials to the authentication manager
+            return getAuthenticationManager().authenticate(authentication);
+        } catch (Exception exception) {
+            log.error(exception.getMessage());
+            //handleErrorResponse(request, response, exception); //Todo: Create method handle
+            return null;
+        }
     }
 
     @Override
-    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
-        super.successfulAuthentication(request, response, chain, authResult);
+    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) throws IOException, ServletException {
+        super.successfulAuthentication(request, response, chain, authentication);
     }
 }

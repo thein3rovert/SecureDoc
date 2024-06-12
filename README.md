@@ -1915,4 +1915,58 @@ public class CacheConfig {
 But we will stick with this for now what we are going to do now that we have the cache is go back to
 the login attempt method in the userserviceimpl class and imput our logic. 
 
+So the logic updateLoginAttempt. we have a swtich statement that is going to check if the login type is
+LOGIN ATTEMPT or LOGIN SUCCESS. 
+
+In the case of -> LOGIN ATTEMPT:  it checks if the user not in the cache, and if the user is not in the cache, it then set the
+login attemto 0 and then set the account non lock to true, meaning the user account is not locked. 
+Otherwise, if the user is already in the cache meaning the user already tries to login then it increase their loginattempt 
+by 1, and then put thier email and their loginattemps numbers in the cache. 
+It also check if the user login attempt is greater than 5, if it is then it locks their account.
+ Then we save the user
+In the case of -> LOGIN SUCCESS: We set the account non lock to true, meaning the user account is not locked, 
+set their login attempts to 0, and remove them from the cache. 
+Then we save the user.
+
+Now that we have done the updateLoginAttempt method we need to find a way to get the logic credentials from the HttpServletRequest
+and pass that into the authentication manage so that we can trigger the authentication process.
+```java
+    @Override
+    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException, IOException, ServletException {
+        userService.updateLoginAttempt("danielolaibi@gmail.com", LOGIN_ATTEMPT);
+        return null;
+    }
+```
+- Update login credential from httpserveletrequest 
+First we are going to define a new Request -> Login Request in the dto package, 
+How that we have the request we will try to map the value from the request to the
+email and the password in the Login Request. 
+
+So after we created update login attempt, we then try to get the login credentials from the http request, in other for us 
+to do that we have to create a new login request class that has the emial and password fields then map the 
+email and password coming from the request to the login request email and password. 
+```java
+public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException, IOException, ServletException {
+        try {
+            //Grab the user information to create the authentication after getting the login types
+            var user = new ObjectMapper().configure(AUTO_CLOSE_SOURCE, true).readValue(request.getInputStream(), LoginRequest.class);
+```
+After maping the crediential we the call the userservices to update the login attempt by passing the email
+gotten fromn the mapped credentials.
+```java
+  var user = new ObjectMapper().configure(AUTO_CLOSE_SOURCE, true).readValue(request.getInputStream(), LoginRequest.class);
+            userService.updateLoginAttempt(user.getEmail(), LOGIN_ATTEMPT);
+```
+
+Then we try to create the authentication object which takes an unauthenticated authentication, pass in the credentials and then 
+get the authenticationManager and then authenticate the user.
+```java
+  var authentication = ApiAuthentication.unauthenticated(user.getEmail(), user.getPassword());
+            //Pass the credentials to the authentication manager
+            return getAuthenticationManager().authenticate(authentication);
+```
+In the attempt authentication method we used a try catch block to handle the exception in case there is an error while trying to 
+authenticate the user.
+So now we will work on the handleErrorResponse method
+### Error Response
 
