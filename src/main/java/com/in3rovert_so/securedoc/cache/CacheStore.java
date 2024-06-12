@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 public class CacheStore <K, V>{
     //Defining the cache
     private final Cache<K, V> cache;
-    private static final TimeUnit NANOSECONDS;
+
     //Define a constructor for this cacheStore
     public CacheStore(int expiryDuration, TimeUnit timeUnit) {
         //Example: Expiry duration = 5, TimeUnit = Min -> 5 min

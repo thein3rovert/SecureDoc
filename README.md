@@ -1895,3 +1895,24 @@ cache based on the key.
 So that is all about the cache store, how ever this is just a cache store we have to do an implementation 
 of the cache store. Thats what we going to be working on next. 
 
+### Cache Configuration 
+Now that we have the cache store we can define bean for specific implementations, we can pretty much use this 
+cache store for any key value pair that we want to cache. 
+ We are going to create an other class in the same cache pakage, in the class we created a cache `userCache`
+where we can pass in a key for the String and an Integer for the Value and its going to 
+expire after 900 sec which is a min. All the values and entries of the cache are going to 
+expire after 900 sec of the time that we put them in the cache. 
+
+So now we have the cache and we can also create another cache if we want we can create as many
+cache as we want.
+```js
+public class CacheConfig {
+    @Bean(name = "userLoginCache")
+    public CacheStore<String, Integer> userCache() {
+        return new CacheStore<>(900, TimeUnit.SECONDS);
+    }
+```
+But we will stick with this for now what we are going to do now that we have the cache is go back to
+the login attempt method in the userserviceimpl class and imput our logic. 
+
+
