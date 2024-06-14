@@ -22,6 +22,7 @@ import java.io.IOException;
 
 import static com.fasterxml.jackson.core.JsonParser.Feature.AUTO_CLOSE_SOURCE;
 import static com.in3rovert_so.securedoc.enumeration.LoginType.LOGIN_ATTEMPT;
+import static com.in3rovert_so.securedoc.utils.RequestUtils.handleErrorResponse;
 import static org.springframework.http.HttpMethod.POST;
 
 @Slf4j
@@ -46,7 +47,7 @@ public class AuthenticationFilter extends AbstractAuthenticationProcessingFilter
             return getAuthenticationManager().authenticate(authentication);
         } catch (Exception exception) {
             log.error(exception.getMessage());
-            //handleErrorResponse(request, response, exception); //Todo: Create method handle
+            handleErrorResponse(request, response, exception); //Todo: Create method handle
             return null;
         }
     }

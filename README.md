@@ -1944,7 +1944,7 @@ email and the password in the Login Request.
 
 So after we created update login attempt, we then try to get the login credentials from the http request, in other for us 
 to do that we have to create a new login request class that has the emial and password fields then map the 
-email and password coming from the request to the login request email and password. 
+email and password coming from the httpservlet request to the `loginRequest` email and password. 
 ```java
 public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException, IOException, ServletException {
         try {
@@ -1957,7 +1957,6 @@ gotten fromn the mapped credentials.
   var user = new ObjectMapper().configure(AUTO_CLOSE_SOURCE, true).readValue(request.getInputStream(), LoginRequest.class);
             userService.updateLoginAttempt(user.getEmail(), LOGIN_ATTEMPT);
 ```
-
 Then we try to create the authentication object which takes an unauthenticated authentication, pass in the credentials and then 
 get the authenticationManager and then authenticate the user.
 ```java
@@ -1965,8 +1964,38 @@ get the authenticationManager and then authenticate the user.
             //Pass the credentials to the authentication manager
             return getAuthenticationManager().authenticate(authentication);
 ```
-In the attempt authentication method we used a try catch block to handle the exception in case there is an error while trying to 
-authenticate the user.
-So now we will work on the handleErrorResponse method
-### Error Response
 
+### Error Response
+Class(RequestUtils.java)
+In the attempt authentication method we used a try catch block to handle the exception in case there is an error while trying to
+authenticate the user.
+So now we will work on the handleErrorResponse method, this method is to handle an error response by
+writing the error response inside the response body of the http request,response.
+
+- handleErrorResponse method
+If the exception is an instance of AccessDeniedException, it calls the getErrorResponse method to get an error response object 
+with the appropriate status code and error message. Then, it calls the writeResponse method to write the error response inside 
+the response body of the response object.
+This method provides a way to handle and respond to errors during the authentication process.
+
+- The getErrorResponse method gets an error response based on the given parameter, it takes in  the 
+request and reponse http servlet and an exception and a status code, it then checks if the reponse contentype 
+to a application_json_values and also set the status code of the response, it then returns an error response object.
+```java
+   private static Response getErrorResponse(HttpServletRequest request, HttpServletResponse response, Exception exception, HttpStatus status) {
+        response.setContentType(APPLICATION_JSON_VALUE);
+        response.setStatus(status.value());
+        return new Response(now().toString(), status.value(), request.getRequestURI(), HttpStatus.valueOf(status.value()), errorResponse.apply(exception, status), getRootCauseMessage(exception), emptyMap());
+    }
+}
+```
+
+Then we created an helper method that helps to writeResponse the given handleErrorResponse method object to the 
+output stream of the HttpServletResponse using an ObjectMapper.
+This method is designed to handle the serialization of the response object and send it back as a response in an 
+HTTP servlet context. The method ensures that the output stream is flushed after writing the response and catches any exceptions that occur during the process, rethrowing them as an ApiException.
+
+Overall, all this was done so if we have an exception in the attenpt authentication method, we will get a well formatted error response.
+
+So the next thing that we need to work on is the successful authentication process and for this we are going to need the JWT service so thats 
+what we are going to be working in next. 
