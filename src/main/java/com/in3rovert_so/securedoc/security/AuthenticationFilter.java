@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.in3rovert_so.securedoc.domain.ApiAuthentication;
 import com.in3rovert_so.securedoc.dtorequest.LoginRequest;
 import com.in3rovert_so.securedoc.enumeration.LoginType;
+import com.in3rovert_so.securedoc.service.JwtService;
 import com.in3rovert_so.securedoc.service.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -28,7 +29,7 @@ import static org.springframework.http.HttpMethod.POST;
 @Slf4j
 public class AuthenticationFilter extends AbstractAuthenticationProcessingFilter {
     private final UserService userService; //Todo: Update the login Attempt of the User.
-    private final JwtService jwtService;
+    private final JwtService jwtService; //Import Jwtservice
 
     public AuthenticationFilter(AuthenticationManager authenticationManager, UserService userService, JwtService jwtService) {
         super(new AntPathRequestMatcher("/user/login", POST.name()), authenticationManager);
