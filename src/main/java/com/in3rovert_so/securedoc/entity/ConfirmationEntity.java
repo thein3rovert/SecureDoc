@@ -39,6 +39,6 @@ public class ConfirmationEntity extends Auditable {
     public ConfirmationEntity(UserEntity userEntity) { // We dont need to get the key because they are going to generate it for us.
         this.userEntity = userEntity;
         this.key = UUID.randomUUID().toString(); //When ever we create a new instance of this confirmation, it going to
-        //automaticallt generate the key.
+        //automatically generate the key.
     }
 }

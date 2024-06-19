@@ -1,6 +1,7 @@
 package com.in3rovert_so.securedoc.domain;
 
 import com.in3rovert_so.securedoc.dto.User;
+import io.jsonwebtoken.Claims;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,7 +14,7 @@ import java.util.List;
 @Setter
 public class TokenData {
     private User user;
-    //private Claims claims;
+    private Claims claims; //Coming from the jjwt lib
     private boolean valid;
     private List<GrantedAuthority> authorities; //AUTHORITIES ASSOCIATED WITH THE TOKEN.
 }

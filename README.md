@@ -1999,3 +1999,66 @@ Overall, all this was done so if we have an exception in the attenpt authenticat
 
 So the next thing that we need to work on is the successful authentication process and for this we are going to need the JWT service so thats 
 what we are going to be working in next. 
+
+### JWT Services part 1
+Todo: In these approah we are going to make sure we add the token in a secure only cookie. 
+First we created an interface for JwtServices, then in side this interface we define the following methods, 
+- CreateToken - This method helps to create a Jwt token for the USER. It takes in the user object and a 
+funtion token object as a parameter. The aim of the funtion is to convert a jwt token to a string representation 
+of the token, the method return a string representing the created token.
+- extractToken - The method takes an  an HttpServletRequest object and a tokenType string as parameters.
+The aim of the method is to extract the token from the request and return it as a string.
+- addCookie - The method add a cookie to an HttpServletResponse object. The method add a cookie to the response with the 
+user's token and token type. 
+- getTokenData - This method extract token data from a JWT token. The method takes in a token as a string.
+It takes a String token and a Function<TokenData, T> object as parameters. 
+The Function<TokenData, T> object is used to convert a TokenData object to a generic type T.
+The method returns the extracted token data.
+
+So before the proceed with the method we have to define the token first, so in the domain package we created a token class, 
+which has two fields one is the access and one is the refresh. 
+The access token fields allow us to access the token and the refresh token allows us to refresh the token..
+
+The next thing we want to also do is define the token data, so we created a new class tokenData inside this class,w e defined 
+the fields, user, claims, valid and authorities.
+The use is going to be the user associated with the token and the claims is going to be the claims associated with the token
+and the valid is going to be a boolean that indicates if the token is valid or not and the authorities is going to be the 
+authorities associated with the token.
+
+Now that we have the token data we need to define the token type, which is going to be an enum so we 
+will create an enum class inside this class we define the token type enum.
+ACCESS, REFRESH, the access enum has a valu of "access-token" and the refresh enum has a value of "refresh-token"..
+Then we define a field value which will allow us to later get the value of the token type .
+
+JWT PART 2
+So now we need to give an implementation for all these methods which are in the JWTService 
+business layer package, so what we did fi rs₫t was head to the `jjwt gitgub lirary` and then copy the maven dependency
+and added it to the POM file so now we have it in our class path as our dependencies.
+
+Then we import the claims from the libabry in the `TokenData` class, then next thing we will do is give an 
+implementation for the methods in the `JwtService` class and also a JwtConfig class. 
+The Jwt config is going to fetch some configuration for us. 
+
+In the Jwtconfig file class, we defien two values which are expirating and secret, the expiration is 
+the expiration time of the token and the secret is the secret key for the token. However we did not directly 
+pass in the values, what we did was pass in the values from the environment variables, then define the values fro the 
+environment variables the application.yml file. We set the expiration to 5 days so the token will expire after 5 days. 
+```java
+public class JwtConfiguration {
+    @Value("${jwt.expiration}")
+    private Long expiration;
+    @Value("${jwt.secret}")
+    private String secret;
+}
+```
+When we going to run the application then we will pass in the secret key.. 
+
+After we head back to the JwtServicesImpl and extend the JwtConfig also implement the JwtService. 
+```java
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class JwtServiceImpl extends JwtConfiguration implements JwtService { }
+```
+Then we implement the methods for this class, so that we can create a token and extract a token., add a cookie and get token data.
+
