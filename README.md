@@ -2061,4 +2061,29 @@ After we head back to the JwtServicesImpl and extend the JwtConfig also implemen
 public class JwtServiceImpl extends JwtConfiguration implements JwtService { }
 ```
 Then we implement the methods for this class, so that we can create a token and extract a token., add a cookie and get token data.
-
+We implemented our first helper method, SecretKey, the method takes in the secret key (Featch it for us) from the environment variables.
+- Key fields
+```java
+private final Supplier<SecretKey> Key = () -> Keys.hmacShaKeyFor(Decoders.BASE64.decode(getSecret()));
+```
+- Claims Fields
+Secondly we create another field function that takes in a String(token) and return the `claims` claims are data that we 
+set on the token. This is goin to give us the claims associated with the tokens.
+```java
+   private final Function<String, Claims> claimsFunction = token ->
+            Jwts.parser()
+                    .verifyWith(key.get())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+```
+- Claim Sibject fields
+Thirdly we created another one, we are going to give it the token and it is goig to give us the 
+subject, which is the claims Subject. 
+- Authorities
+Forth we are going to create another for the authorities, this method is to construct a list of GrantedAutheorities Object 
+based on the claims present in the token. The method takes a token as input, retrieves the values of two claims from the token
+(one claim representing authorities and the other claim representing a role), and combines them into a comma-separated string.
+The resulting string is then passed to a function named commaSeparatedStringToAuthorityList, which is assumed to convert the 
+string into a list of GrantedAuthority objects. The resulting list of GrantedAuthority objects is then returned as the result 
+of the method.
