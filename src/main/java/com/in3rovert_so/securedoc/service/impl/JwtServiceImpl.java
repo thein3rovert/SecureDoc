@@ -4,6 +4,7 @@ import com.in3rovert_so.securedoc.domain.Token;
 import com.in3rovert_so.securedoc.domain.TokenData;
 import com.in3rovert_so.securedoc.dto.User;
 import com.in3rovert_so.securedoc.enumeration.TokenType;
+import com.in3rovert_so.securedoc.function.TriConsumer;
 import com.in3rovert_so.securedoc.security.JwtConfiguration;
 import com.in3rovert_so.securedoc.service.JwtService;
 import com.in3rovert_so.securedoc.service.UserService;
@@ -36,6 +37,7 @@ import static io.jsonwebtoken.Header.TYPE;
 import static java.time.Instant.now;
 import static java.util.Arrays.stream;
 import static java.util.Optional.empty;
+import static org.springframework.boot.web.server.Cookie.SameSite.NONE;
 import static org.springframework.security.core.authority.AuthorityUtils.commaSeparatedStringToAuthorityList;
 
 @Service
@@ -65,6 +67,7 @@ public class JwtServiceImpl extends JwtConfiguration implements JwtService {
                     // Get the payload (claims) from the parsed claims.
                     .getPayload();
     private final Function<String , String> subject = token -> getClaimsValue(token, Claims::getSubject);
+    //private final Function<String , String> date = token -> getClaimsValue(token, Claims::getExpiration);
 
     /**
      * This function extracts a token from a request cookie.
@@ -129,7 +132,56 @@ public class JwtServiceImpl extends JwtConfiguration implements JwtService {
                     builder.get()
                             .subject(user.getUserId()) // Set the subject of the token to the user's ID
                             .expiration(Date.from(now().plusSeconds(getExpiration()))) // Set the expiration time of the token
-                            .compact(); //
+                            .compact();
+
+    /**
+     * A function that adds a cookie to the response.
+     */
+    private final TriConsumer<HttpServletResponse, User, TokenType> addCookie = (response, user, type) -> {
+        switch (type) {
+            case ACCESS -> {
+                // Create an access token for the user.
+                var accessToken = createToken(user, Token::getAccess);
+                // Create a new cookie.
+                var cookie = new Cookie(type.getValue(), accessToken);
+                // Set the cookie properties.
+                cookie.setHttpOnly(true);
+                //cookie.setSecure(true);
+                cookie.setMaxAge(2 * 60);
+                cookie.setPath("/");
+                cookie.setAttribute("SameSite", NONE.name());
+                // Add the cookie to the response.
+                response.addCookie(cookie);
+        }
+            case REFRESH -> {
+                // Create an access token for the user.
+                var refreshToken = createToken(user, Token::getRefresh);
+                // Create a new cookie.
+                var cookie = new Cookie(type.getValue(), refreshToken);
+                // Set the cookie properties.
+                cookie.setHttpOnly(true);
+                //cookie.setSecure(true);
+                cookie.setMaxAge(2 * 60 * 60); // Time set for the token to expire
+                cookie.setPath("/");
+                cookie.setAttribute("SameSite", NONE.name());
+                // Add the cookie to the response.
+                response.addCookie(cookie);
+            }
+        }
+    };
+
+    /**
+     * Extracts a specific value from the claims using the provided function.
+     *
+     * @param <T> The type of the value to extract.
+     * @param token The token containing the claims.
+     * @param claims The function to extract the value from the claims.
+     * @return The extracted value.
+     */
+    private <T> T getClaimsValue(String token, Function<Claims, T> claims) {
+        // Apply the claimsFunction to extract the Claims object.
+        return claimsFunction.andThen(claims).apply(token);
+    }
 
     private final BiFunction<HttpServletRequest, String, Optional<Cookie>> extractCookie = (request, cookieName) ->
             Optional.of(stream(request.getCookies() == null ? new Cookie[] {new Cookie(EMPTY_VALUE, EMPTY_VALUE)} : request.getCookies())

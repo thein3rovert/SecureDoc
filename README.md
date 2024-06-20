@@ -2110,6 +2110,23 @@ a single entry with the key "type" and the value "JWT". The audience (recipient)
 time. The not before (start time) of the JWT is set to the current time. Finally, the JWT is signed with a specified key and the 
 HS512 signature algorithm.
 
+Jwt part 5(6)
+After creating the builder we then need a mthod that is going to add the cookie to the response, i want
+this cookie to be a consumer cookie and also want it to accept three values so I created a functional interface class
+named `triConsumer` this class is going to take three arguments and accept them.
+
+After i created the addCookie method i need to add a method that is going to add the cookie to the response. Because we need
+to know if its a access token that we will be working with or its a refresh token so we will be using a switch statement.
+
+The aim and objective of the addCookie method is to add a cookie to the HttpServletResponse object. The method takes three
+arguments: the HttpServletResponse object, a User object, and a TokenType object.
+The method uses a switch statement to determine the type of token being added. If the type is ACCESS, it creates an access
+token for the user using the createToken method and the Token::getAccess function. It then creates a new Cookie object with
+the token value and sets various properties such as HttpOnly, MaxAge, and Path. Finally, it adds the cookie to the HttpServletResponse object using the addCookie method.
+Overall, the addCookie method is used to add a cookie to the response when the user logs in or performs an action that
+requires authentication.
+Then in the case of the refresh token it does the same thing.
+
 
 
 
