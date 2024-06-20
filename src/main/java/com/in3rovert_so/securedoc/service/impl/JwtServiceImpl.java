@@ -7,10 +7,13 @@ import com.in3rovert_so.securedoc.enumeration.TokenType;
 import com.in3rovert_so.securedoc.security.JwtConfiguration;
 import com.in3rovert_so.securedoc.service.JwtService;
 import com.in3rovert_so.securedoc.service.UserService;
+import com.in3rovert_so.securedoc.utils.RequestUtils;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -20,13 +23,19 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
-import java.util.List;
-import java.util.Optional;
-import java.util.StringJoiner;
+import java.time.Instant;
+import java.util.*;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static com.in3rovert_so.securedoc.constant.Constants.*;
+import static com.in3rovert_so.securedoc.enumeration.TokenType.ACCESS;
+import static io.jsonwebtoken.Header.JWT_TYPE;
+import static io.jsonwebtoken.Header.TYPE;
+import static java.time.Instant.now;
+import static java.util.Arrays.stream;
+import static java.util.Optional.empty;
 import static org.springframework.security.core.authority.AuthorityUtils.commaSeparatedStringToAuthorityList;
 
 @Service
@@ -38,13 +47,95 @@ public class JwtServiceImpl extends JwtConfiguration implements JwtService {
     //Define some helper private methods
     private final Supplier<SecretKey> key = () -> Keys.hmacShaKeyFor(Decoders.BASE64.decode(getSecret()));//For providing a secret key
 
+    /**
+     * This function parses a token to extract the claims using a specified key.
+     *
+     * @param token - The token to parse and extract claims from.
+     * @return The Claims extracted from the token.
+     */
     private final Function<String, Claims> claimsFunction = token ->
+            // Parse the token using the JWT parser.
             Jwts.parser()
+                    // Verify the token with a specified key.
                     .verifyWith(key.get())
+                    // Build the parser to prepare for parsing signed claims.
                     .build()
+                    // Parse the signed claims from the token.
                     .parseSignedClaims(token)
+                    // Get the payload (claims) from the parsed claims.
                     .getPayload();
     private final Function<String , String> subject = token -> getClaimsValue(token, Claims::getSubject);
+
+    /**
+     * This function extracts a token from a request cookie.
+     *
+     * @param request - The HttpServletRequest object from which to extract the token.
+     * @param cookieName - The name of the cookie to extract the token from.
+     * @return An Optional containing the token as a String, or an empty Optional if the token is not found.
+     */
+    private final BiFunction<HttpServletRequest, String, Optional<String>> extractToken = (request, cookieName) ->
+            // Get the cookies from the request, or an empty array if there are no cookies.
+            Optional.of(stream(request.getCookies() == null ? new Cookie [] {new Cookie(EMPTY_VALUE, EMPTY_VALUE)} : request.getCookies())
+                            // Filter the cookies to only include the one with the specified name.
+                            .filter(cookie -> Objects.equals(cookieName, cookie.getName()))
+                            // Map each cookie to its value.
+                            .map(Cookie::getValue)
+                            // Find the first cookie value.
+                            .findAny())
+                    // If no token is found, return an empty Optional.
+                    .orElse(empty());
+
+    /**
+     * This Supplier returns a JwtBuilder object.
+     *
+     * @return The JwtBuilder object.
+     */
+    private final Supplier<JwtBuilder> builder = () ->
+            // Create a new JwtBuilder.
+            Jwts.builder()
+                    // Set the header of the JWT to contain a single entry with the key "type" and the value "JWT".
+                    .header().add(Map.of(TYPE, JWT_TYPE))
+                    // Add the audience (recipient) of the JWT.
+                    .and()
+                    .audience().add(THE_IN3ROVERT_LLC)
+                    // Add the id (unique identifier) of the JWT.
+                    .and()
+                    .id(UUID.randomUUID().toString())
+                    // Set the issued at (creation time) of the JWT.
+                    .issuedAt(Date.from(now()))
+                    // Set the not before (start time) of the JWT.
+                    .notBefore(new Date())
+                    // Sign the JWT with a specified key and signature algorithm.
+                    .signWith(key.get(), Jwts.SIG.HS512);
+
+    /**
+     * Builds a token based on the provided user and token type.
+     *
+     * @param {User} user - The user for whom the token is being built.
+     * @param {TokenType} type - The type of token being built.
+     * @return {string} The built token.
+     */
+    private final BiFunction<User, TokenType, String> buildToken = (user, type) ->
+            // Check if the token type is ACCESS
+            Objects.equals(type, ACCESS) ?
+                    // Build the token with additional claims
+                    builder.get()
+                            .subject(user.getUserId()) // Set the subject of the token to the user's ID
+                            .claim(AUTHORITIES, user.getAuthorities()) // Add the AUTHORITIES claim with the user's authorities
+                            .claim(ROLE, user.getRoles()) // Add the ROLE claim with the user's roles
+                            .expiration(Date.from(now().plusSeconds(getExpiration()))) // Set the expiration time of the token
+                            .compact() : // Build the token
+                    // Build the token without additional claims if its a refresh token
+                    builder.get()
+                            .subject(user.getUserId()) // Set the subject of the token to the user's ID
+                            .expiration(Date.from(now().plusSeconds(getExpiration()))) // Set the expiration time of the token
+                            .compact(); //
+
+    private final BiFunction<HttpServletRequest, String, Optional<Cookie>> extractCookie = (request, cookieName) ->
+            Optional.of(stream(request.getCookies() == null ? new Cookie[] {new Cookie(EMPTY_VALUE, EMPTY_VALUE)} : request.getCookies())
+                    .filter(cookie -> Objects.equals(cookieName, cookie.getName()))
+                    .findAny())
+                    .orElse(empty());
 
     public Function<String, List<GrantedAuthority>> authorities = token -> //Todo: Define Key Authorities
             commaSeparatedStringToAuthorityList(new StringJoiner(AUTHORITY_DELIMITER)
@@ -57,7 +148,7 @@ public class JwtServiceImpl extends JwtConfiguration implements JwtService {
 
     @Override
     public Optional<String> extractToken(HttpServletRequest request, String tokenType) {
-        return Optional.empty();
+        return empty();
     }
 
     @Override

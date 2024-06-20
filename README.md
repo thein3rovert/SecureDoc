@@ -2087,3 +2087,29 @@ based on the claims present in the token. The method takes a token as input, ret
 The resulting string is then passed to a function named commaSeparatedStringToAuthorityList, which is assumed to convert the 
 string into a list of GrantedAuthority objects. The resulting list of GrantedAuthority objects is then returned as the result 
 of the method.
+
+### Jwt part 4 
+Next we need another helper method to extract the token,the extractoken method will return an optional of stream(something)
+otherwise it will throw an error. When we call get cookies and it is null then a new array will be created with 
+the values of empty because we dont just want it to return when it cant find any cookies otherwise it will call the getCookie. 
+So basically it will filter the request for the cookies, map the cookie to the values and return it.
+```java
+ private final BiFunction<HttpServletRequest, String, Optional<String>> extractToken = (request, cookieName) ->
+            Optional.of(stream(request.getCookies() == null ? new Cookie [] {new Cookie(EMPTY_VALUE, EMPTY_VALUE)} : request.getCookies())
+                    .filter(cookie -> Objects.equals(cookieName, cookie.getName()))
+                    .map(Cookie::getValue)
+                    .findAny())
+                    .orElse(empty());
+```
+Then we define an other method extractcookie, this method is forgetting the cookie itself, a bit similar to the extracttoken, 
+where we were trying to get value of the cookie. 
+
+Then we define a JWT Builder which will be use to create a JWT, the builder is configured to set the header of the JWT to contain
+a single entry with the key "type" and the value "JWT". The audience (recipient) of the JWT is set to "THE_IN3ROVERT_LLC". The id 
+(unique identifier) of the JWT is set to a randomly generated UUID. The issued at (creation time) of the JWT is set to the current 
+time. The not before (start time) of the JWT is set to the current time. Finally, the JWT is signed with a specified key and the 
+HS512 signature algorithm.
+
+
+
+
