@@ -32,6 +32,7 @@ import java.util.function.Supplier;
 
 import static com.in3rovert_so.securedoc.constant.Constants.*;
 import static com.in3rovert_so.securedoc.enumeration.TokenType.ACCESS;
+import static com.in3rovert_so.securedoc.enumeration.TokenType.REFRESH;
 import static io.jsonwebtoken.Header.JWT_TYPE;
 import static io.jsonwebtoken.Header.TYPE;
 import static java.time.Instant.now;
@@ -44,7 +45,7 @@ import static org.springframework.security.core.authority.AuthorityUtils.commaSe
 @RequiredArgsConstructor
 @Slf4j
 public class JwtServiceImpl extends JwtConfiguration implements JwtService {
-    private final UserService user;
+    private final UserService userService;
 
     //Define some helper private methods
     private final Supplier<SecretKey> key = () -> Keys.hmacShaKeyFor(Decoders.BASE64.decode(getSecret()));//For providing a secret key
@@ -195,21 +196,29 @@ public class JwtServiceImpl extends JwtConfiguration implements JwtService {
                     .add(ROLE_PREFIX + claimsFunction.apply(token).get(ROLE, String.class)).toString());
     @Override
     public String createToken(User user, Function<Token, String> tokenFunction) {
-        return null;
+        var token = Token.builder().access(buildToken.apply(user, ACCESS)).refresh(buildToken.apply(user, REFRESH)).build();
+        return tokenFunction.apply(token);
     }
 
     @Override
-    public Optional<String> extractToken(HttpServletRequest request, String tokenType) {
-        return empty();
+    public Optional<String> extractToken(HttpServletRequest request, String cookieName) {
+        return extractToken.apply(request, cookieName);
     }
 
     @Override
     public void addCookie(HttpServletResponse response, User user, TokenType type) {
-
+        addCookie.accept(response, user, type);
     }
 
     @Override
     public <T> T getTokenData(String token, Function<TokenData, T> tokenFunction) {
-        return null;
+        return tokenFunction.apply(
+                TokenData.builder()
+                        .valid(Objects.equals(userService.getUserByUserId(subject.apply(token)).getUserId(), claimsFunction.apply(token).getSubject()))
+                        .authorities(authorities.apply(token))
+                        .claims(claimsFunction.apply(token))
+                        .user(userService.getUserByUserId(subject.apply(token)))
+                        .build()
+        );
     }
 }
