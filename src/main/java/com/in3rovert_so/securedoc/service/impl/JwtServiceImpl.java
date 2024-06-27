@@ -221,4 +221,14 @@ public class JwtServiceImpl extends JwtConfiguration implements JwtService {
                         .build()
         );
     }
+
+    @Override
+    public void removeCookie(HttpServletRequest request, HttpServletResponse response, String cookieName) {
+        var optionalCookie  = extractCookie.apply(request, cookieName); //In case we have no cookie.
+        if(optionalCookie.isPresent()) {
+            var cookie = optionalCookie.get();
+            cookie.setMaxAge(0);
+            response.addCookie(cookie);
+        }
+    }
 }
