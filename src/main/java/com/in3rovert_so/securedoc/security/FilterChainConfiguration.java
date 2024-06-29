@@ -18,11 +18,15 @@ import org.springframework.security.web.SecurityFilterChain;
 
 import java.util.List;
 
+import static com.in3rovert_so.securedoc.constant.Constants.LOGIN_PATH;
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class FilterChainConfiguration {
+
+    //public static final String LOGIN_PATH = "/user/login";
 
     //Todo: 3. Filter the endpoint (Open up some endPoints)
     @Bean
@@ -30,7 +34,7 @@ public class FilterChainConfiguration {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request ->
-                        request.requestMatchers("/user/login").permitAll() //For every http request that matches a specific pattern permit them.
+                        request.requestMatchers(LOGIN_PATH).permitAll() //For every http request that matches a specific pattern permit them.
                                 .anyRequest().authenticated()) //Any other user that does match "Authenticate them"
                 .build();
     }

@@ -2110,7 +2110,7 @@ a single entry with the key "type" and the value "JWT". The audience (recipient)
 time. The not before (start time) of the JWT is set to the current time. Finally, the JWT is signed with a specified key and the 
 HS512 signature algorithm.
 
-Jwt part 5(6)
+### Jwt part 5(6)
 After creating the builder we then need a mthod that is going to add the cookie to the response, i want
 this cookie to be a consumer cookie and also want it to accept three values so I created a functional interface class
 named `triConsumer` this class is going to take three arguments and accept them.
@@ -2126,6 +2126,35 @@ the token value and sets various properties such as HttpOnly, MaxAge, and Path. 
 Overall, the addCookie method is used to add a cookie to the response when the user logs in or performs an action that
 requires authentication.
 Then in the case of the refresh token it does the same thing.
+
+So what i want to do now is understand the code and come back before proceeding to the methods.
+
+
+--  Date: 29/08/20024
+Today we want to work on the authentication filter, when ever the authentication filter gets called it is going to call the
+authentication and when the authentication is successsful, then its going to call the successful
+authentication method, so what we want to do now is, assuming that the authentication is successful, we are going to do whatevr
+we need to do with the authentication, the response, the filter chain or with the request because we have access to everything we need
+inside of the authentication.
+
+So for the successfulAuthentication method, now if the user login and the autentcation is successful, the update login attempt
+gets triggers and then a login attempt is updated.
+```java
+  var user = (User)authentication.getPrincipal(); //This is going to be user.
+        userService.updateLoginAttempt(user.getEmail(), LOGIN_SUCCESS);
+```
+So now wnat we need to do is determine what kind of response we need to send back to the user, when the login is successful,
+because if the user is using mfa we need to send them a diff message and if they are not using mfa we also need to send a diff message.
+
+So we created a var `httpResponse` then we use a mapper to write the body of our `httpResponse` to the `servletHttpResponse`, so its going to look like a normal controller return these values.
+So now we have to to work on the important method, `sendRessponse` and `sendQrCode` .
+
+The sendResponse method add cookie to the httpServletResponse and then construct a Response object with the information about
+the user and a success message.
+The SendQrcode method is going to send the qrcode to the user if the user has MFA enabled.
+
+So what we want to do next is go back and work on the authentication provider, and also need to work on the filterchain config class
+alo, this has to be done before we run the application. 
 
 
 
