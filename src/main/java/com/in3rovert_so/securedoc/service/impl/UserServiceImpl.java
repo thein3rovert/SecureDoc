@@ -2,12 +2,12 @@ package com.in3rovert_so.securedoc.service.impl;
 
 import com.in3rovert_so.securedoc.cache.CacheStore;
 import com.in3rovert_so.securedoc.domain.RequestContext;
+import com.in3rovert_so.securedoc.dto.User;
 import com.in3rovert_so.securedoc.entity.ConfirmationEntity;
 import com.in3rovert_so.securedoc.entity.CredentialEntity;
 import com.in3rovert_so.securedoc.entity.RoleEntity;
 import com.in3rovert_so.securedoc.entity.UserEntity;
 import com.in3rovert_so.securedoc.enumeration.Authority;
-import com.in3rovert_so.securedoc.enumeration.EventType;
 import com.in3rovert_so.securedoc.enumeration.LoginType;
 import com.in3rovert_so.securedoc.event.UserEvent;
 import com.in3rovert_so.securedoc.exception.ApiException;
@@ -23,9 +23,7 @@ import org.springframework.context.ApplicationEventPublisher;
 //import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.Objects;
 
 import static com.in3rovert_so.securedoc.enumeration.EventType.REGISTRATION;
 import static com.in3rovert_so.securedoc.utils.UserUtils.createUserEntity;
@@ -95,6 +93,20 @@ public class UserServiceImpl implements UserService {
             }
         }
         userRepository.save(userEntity);
+    }
+
+    @Override
+    public User getUserByUserId(String userId) {
+        return null;
+    }
+
+    @Override
+    public User getUserByEmail(String email) {
+        return null;
+    }
+    @Override
+    public CredentialEntity getUserCredentialById(Long id) {
+        return null;
     }
 
     private UserEntity getUserEntityByEmail(String email) {
