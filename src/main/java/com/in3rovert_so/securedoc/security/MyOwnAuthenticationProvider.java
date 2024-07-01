@@ -8,14 +8,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.function.Consumer;
 import java.util.function.Function;
+
+import static com.in3rovert_so.securedoc.constant.Constants.NINETY_DAYS;
 
 /**
  * Custom authentication provider for handling user authentication.
@@ -63,7 +63,7 @@ public class MyOwnAuthenticationProvider implements AuthenticationProvider {
         if (user != null) {
             var userCredential = userService.getUserCredentialById(user.getId());
             //After getting the credentials we have to check if the credentials is expired.
-            if (userCredential.getUpdatedAt().minusDays(90).isAfter(LocalDateTime.now())) {
+            if (userCredential.getUpdatedAt().minusDays(NINETY_DAYS).isAfter(LocalDateTime.now())) {
                 throw new ApiException("Credentials are expired please reset your password");
             }
             var userPrincipal = new UserPrincipal(user, userCredential);

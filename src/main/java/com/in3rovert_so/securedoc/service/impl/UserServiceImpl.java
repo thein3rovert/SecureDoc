@@ -16,6 +16,7 @@ import com.in3rovert_so.securedoc.repository.CredentialRepository;
 import com.in3rovert_so.securedoc.repository.RoleRepository;
 import com.in3rovert_so.securedoc.repository.UserRepository;
 import com.in3rovert_so.securedoc.service.UserService;
+import com.in3rovert_so.securedoc.utils.UserUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +28,7 @@ import java.util.Map;
 
 import static com.in3rovert_so.securedoc.enumeration.EventType.REGISTRATION;
 import static com.in3rovert_so.securedoc.utils.UserUtils.createUserEntity;
+import static com.in3rovert_so.securedoc.utils.UserUtils.fromUserEntity;
 import static java.time.LocalDateTime.now;
 
 @Service
@@ -94,19 +96,25 @@ public class UserServiceImpl implements UserService {
         }
         userRepository.save(userEntity);
     }
-
+    //Retrieve users based on their id
     @Override
     public User getUserByUserId(String userId) {
-        return null;
+        var userEntity = userRepository.findUserByUserId(userId).orElseThrow(() -> new ApiException("User not found"));
+        return fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
     }
 
+    //Retrieve users based on their email
     @Override
     public User getUserByEmail(String email) {
-        return null;
+        UserEntity userEntity = getUserEntityByEmail(email);
+
+        return fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
     }
+    //Retrieve users credentials based on their id
     @Override
-    public CredentialEntity getUserCredentialById(Long id) {
-        return null;
+    public CredentialEntity getUserCredentialById(Long userId) {
+       var credentialById = credentialRepository.getCredentialEntitiesById(userId);
+        return credentialById.orElseThrow(()-> new ApiException("Unable to find user credentials"));
     }
 
     private UserEntity getUserEntityByEmail(String email) {

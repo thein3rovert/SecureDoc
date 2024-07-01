@@ -2156,6 +2156,44 @@ The SendQrcode method is going to send the qrcode to the user if the user has MF
 So what we want to do next is go back and work on the authentication provider, and also need to work on the filterchain config class
 alo, this has to be done before we run the application. 
 
+Based on our previous AuthenticationProvider class, we passed in the UserDetailsServices related to spring security, but that was just for testing case, now
+that we have our own user details service we are just going to pass in our own user services.
 
+The authenticate method represents the authentication logic in a custom authentication provider. It verifies the user's credentials by checking if the user exists,
+if the credentials are not expired, and if the passwords match. If all conditions pass, it returns an authenticated ApiAuthentication. Otherwise, it handles exceptions for expired
+credentials or incorrect login attempts. If the user does not exist, it throws an exception stating that the user could not be authenticated.
+
+The next thing we need to do, is work on the method we define in the authenticate method, which are the
+getCredentialsById and getUserByEmail methods and we also have to define a bean for the BCryptPasswordEncoder.
+### User Services Implementation
+Currently all the user services implementation are returning null, that needs to be fixed.
+
+The getUserByUserId method retrieves a user from the repository based on their user ID. If the user is not found, it throws an ApiException with the message "User not found".
+The getUserByEmail method retrieves a user from the repository based on their email.
+The getUserCredentialById method retrieves the credentials of a user from the repository based on their user ID. If the credentials are not found, it throws an ApiException with the message "Unable to find user credentials".
+```java
+    //Retrieve users based on their id
+    @Override
+    public User getUserByUserId(String userId) {
+        var userEntity = userRepository.findUserByUserId(userId).orElseThrow(() -> new ApiException("User not found"));
+        return fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
+    }
+
+    //Retrieve users based on their email
+    @Override
+    public User getUserByEmail(String email) {
+        UserEntity userEntity = getUserEntityByEmail(email);
+        
+        return fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
+    }
+    //Retrieve users credentials based on their id
+    @Override
+    public CredentialEntity getUserCredentialById(Long userId) {
+       var credentialById = credentialRepository.getCredentialEntitiesById(userId);
+        return credentialById.orElseThrow(()-> new ApiException("Unable to find user credentials"));
+    }
+```
+The next thing we have to work on is the user principal, we have to put an impelmentation for all of the methods, all of the informationn
+we need to do that is already in the user, so we just need to pass in the user to the user principal. 
 
 
