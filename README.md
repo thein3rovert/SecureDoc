@@ -2197,3 +2197,47 @@ The next thing we have to work on is the user principal, we have to put an impel
 we need to do that is already in the user, so we just need to pass in the user to the user principal. 
 
 
+## User Principal
+What we are going to work on today is the user principal, we need to put in an implementation for all the methods,
+So what we did was return the values associated with the methods in the userpricipal class, the methods from user entity in the
+UserUtil class has the necessary properties needed for the user so we basically return those properties that is needed by the
+userprincipal.
+```java
+ public static User fromUserEntity(UserEntity userEntity, RoleEntity role, CredentialEntity credentialEntity) {
+        User user = new User();
+        BeanUtils.copyProperties(userEntity, user); //Copy all the fields from the userEntity and put in the user.
+        user.setLastLogin(userEntity.getLastLogin().toString());
+        user.setCredentialsNonExpired(isCredentialsNonExpired(credentialEntity));
+        user.setCreatedAt(userEntity.getCreatedAt().toString());
+        user.setUpdatedAt(userEntity.getUpdatedAt().toString());
+        user.setRoles(role.getName());
+        user.setAuthorities(role.getAuthorities().getValue());
+        return user;
+    }
+```
+```java
+    public String getUsername() {
+        return user.getEmail();
+    }
+
+@Override
+public boolean isAccountNonExpired() {
+        return user.isAccountNonExpired();
+        }
+```
+So what i am going to work on next is the encoder for the password, so i am going to create a new class called security config,
+we just need to define the BCryptPasswordEncoder bean becuase we want to use it to encode the password of the application.
+
+```java
+public class SecurityConfig {
+    @Bean
+    public BCryptPasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder(STRENGTH);
+    }
+}
+```
+One lasy thing we have to work om is the authorisation filter, this is the filter that we have to work on before we intercept any
+request, because this is the filter that is going to intercept every request, and determine which route that user
+is trying to access and if the uses has access to this route, like if the user is authenticated or not. 
+
+

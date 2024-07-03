@@ -1,6 +1,7 @@
 package com.in3rovert_so.securedoc.constant;
 
 public class Constants {
+    public static final int STRENGTH = 12;
     public static final int NINETY_DAYS = 90;
     public static final String LOGIN_PATH = "/user/login";
     public static final String ROLE_PREFIX = "ROLE_";

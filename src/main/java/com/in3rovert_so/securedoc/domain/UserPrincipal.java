@@ -2,8 +2,10 @@ package com.in3rovert_so.securedoc.domain;
 
 import com.in3rovert_so.securedoc.dto.User;
 import com.in3rovert_so.securedoc.entity.CredentialEntity;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
@@ -12,42 +14,43 @@ import java.util.Collection;
 
 @RequiredArgsConstructor
 public class UserPrincipal implements UserDetails {
-
+    //In case i am going to need the user so there will be a getter on the user
+    @Getter
     private final User user;
     private final CredentialEntity credentialEntity;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
+        return AuthorityUtils.commaSeparatedStringToAuthorityList(user.getAuthorities());
     }
 
     @Override
     public String getPassword() {
-        return null;
+        return credentialEntity.getPassword();
     }
 
     @Override
     public String getUsername() {
-        return null;
+        return user.getEmail();
     }
 
     @Override
     public boolean isAccountNonExpired() {
-        return false;
+        return user.isAccountNonExpired();
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return false;
+        return user.isAccountNonLocked();
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return false;
+        return user.isCredentialsNonExpired();
     }
 
     @Override
     public boolean isEnabled() {
-        return false;
+        return user.isEnabled();
     }
 }

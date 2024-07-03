@@ -32,7 +32,7 @@ public class MyOwnAuthenticationProvider implements AuthenticationProvider {
     /**
      * Encoder for hashing and comparing passwords.
      */
-    private final BCryptPasswordEncoder encoder;
+    private final BCryptPasswordEncoder encoder; //Fixed
 
     /**
      * Function for converting Authentication to ApiAuthentication.
@@ -82,6 +82,6 @@ public class MyOwnAuthenticationProvider implements AuthenticationProvider {
     @Override
     public boolean supports(Class<?> authentication) {
         //return true; or:
-        return UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication);
+        return ApiAuthentication.class.isAssignableFrom(authentication);
     }
 }
