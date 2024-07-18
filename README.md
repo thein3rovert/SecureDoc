@@ -2275,7 +2275,40 @@ is a helper method that takes in a token and a request object and returns an aut
         return authentication;
     }
 ```
-
+## Authentication fiilter 2
 So what we want to do next is that whenever the Access token is false or expired meaning if its not present, then 
 we are going to look for the refresh token and then from the refresh token we will generate a new access token.
 
+In the refresh token method we first extract the token from the request and then get the values of the refresh token, after that
+we check if the refresh token is valid or not, if it is valid then we extract the user from the token and then set the
+authentication in the securityContextHolder by first creating authenticated a new access token before setting it into the
+securityContextHolder.
+Then we created a new cookie and set the cookie into the response object and pass the userId into the request context
+
+Its kind of similar to the access token method just a bit different becuase we created a new token if its a refresh token, 
+However is there is not access or refresh token we just clear the  securityContextHolder.
+
+```java
+ }else {
+                var refreshToken = jwtService.extractToken(request, REFRESH.getValue());
+                if(refreshToken.isPresent() && jwtService.getTokenData(refreshToken.get(), TokenData::isValid)) {
+                    //If the request token exist then a new token has to be created for the user
+                    var user = jwtService.getTokenData(refreshToken.get(), TokenData::getUser);
+                    //Set into the security context a newly created access token and then set it to the authentication
+                    SecurityContextHolder.getContext().setAuthentication(getAuthentication(jwtService.createToken(user, Token::getAccess), request));
+                    //Then we create a new cookie
+                    jwtService.addCookie(response, user, ACCESS);
+                    //Pass it to the Request Context
+                    RequestContext.setUserId(user.getId());
+                } else {
+                    //Todo: For clearing the context if we dont have an access token adn a refresh token
+                    SecurityContextHolder.clearContext();
+                }
+            }
+```
+##Authentication filter 3
+So what we are going to do next is the condition for when we want to call the `doInternalFilter` method or when it shuld
+execute, we are just cheking for when we have a access or refresh filter but not when we wnat to actually use the fillter which 
+is what we will be working on next.
+We basically wnat to check if the refresh or access token is coming for the regsiter, login or reset password,w e could have
+added it to the `doInternalFilter` method but i dont thnk that is the best way to do it.
