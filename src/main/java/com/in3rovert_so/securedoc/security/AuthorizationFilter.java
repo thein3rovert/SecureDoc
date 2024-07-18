@@ -1,5 +1,6 @@
 package com.in3rovert_so.securedoc.security;
 
+import com.in3rovert_so.securedoc.constant.Constants;
 import com.in3rovert_so.securedoc.domain.ApiAuthentication;
 import com.in3rovert_so.securedoc.domain.RequestContext;
 import com.in3rovert_so.securedoc.domain.Token;
@@ -19,7 +20,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
 
+import static com.in3rovert_so.securedoc.constant.Constants.OPTIONS_HTTP_METHOD;
+import static com.in3rovert_so.securedoc.constant.Constants.PUBLIC_ROUTES;
 import static com.in3rovert_so.securedoc.enumeration.TokenType.ACCESS;
 import static com.in3rovert_so.securedoc.enumeration.TokenType.REFRESH;
 import static com.in3rovert_so.securedoc.utils.RequestUtils.handleErrorResponse;
@@ -62,6 +66,15 @@ public class AuthorizationFilter extends OncePerRequestFilter {
             log.error(exception.getMessage());
             handleErrorResponse(request, response, exception);
         }
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        var shouldNotFilter = request.getMethod().equalsIgnoreCase(OPTIONS_HTTP_METHOD) || Arrays.asList(PUBLIC_ROUTES).contains(request.getRequestURI());
+        if (shouldNotFilter) {
+            RequestContext.setUserId(0L);
+        }
+        return shouldNotFilter;
     }
 
     private Authentication getAuthentication(String token, HttpServletRequest request) {

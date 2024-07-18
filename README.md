@@ -2312,3 +2312,32 @@ execute, we are just cheking for when we have a access or refresh filter but not
 is what we will be working on next.
 We basically wnat to check if the refresh or access token is coming for the regsiter, login or reset password,w e could have
 added it to the `doInternalFilter` method but i dont thnk that is the best way to do it.
+
+So we created a shouldNotFilter method which is a method that belongs to the OnePerRequestFilter class, the method checks if
+the request equals to some certain URL that we dont want to filter, we have some public endpoint that we dont want to filter
+so it it is, it just sets the UserId to the request context.
+
+```java
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        var shouldNotFilter = request.getMethod().equalsIgnoreCase(OPTIONS_HTTP_METHOD) || Arrays.asList(PUBLIC_ROUTES).contains(request.getRequestURI());
+        if (shouldNotFilter) {
+            RequestContext.setUserId(0L);
+        }
+        return shouldNotFilter;
+    }
+```
+
+So thats all for the filter for now, what we want to work on next is finsh up two more peice of the `filterchainConfiguration` before we can
+finsh up the comfoguration and this is going to happen here.
+
+```java
+ @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        return http
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(request ->
+                        request.requestMatchers(LOGIN_PATH).permitAll() //For every http request that matches a specific pattern permit them.
+                                .anyRequest().authenticated()) //Any other user that does match "Authenticate them"
+                .build();
+    }
+```
