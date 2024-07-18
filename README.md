@@ -2236,8 +2236,46 @@ public class SecurityConfig {
     }
 }
 ```
-One lasy thing we have to work om is the authorisation filter, this is the filter that we have to work on before we intercept any
+One lasy thing we have to work on is the authorisation filter, this is the filter that we have to work on before we intercept any
 request, because this is the filter that is going to intercept every request, and determine which route that user
 is trying to access and if the uses has access to this route, like if the user is authenticated or not. 
 
+
+##  Authrisation filter 1
+These filter will be the one to determine if the user is authenticated or not and also where will 
+put the login that change if the access token is expired.
+
+So first we create a new method called doFilterInternal, this method is going to intercept the request and determine if the user
+is authenticated or not, first it extract the token from the request then it checks if the token is expired or not
+and if its valid, when true it then create an authenticaion then set the authentication into the securitycontextkholder,
+and then it set the userId into the request context.
+```java
+ protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        try{
+            //First we extract the token 
+            var accessToken =jwtService.extractToken(request, ACCESS.getValue());
+            //Check if the accessToken is present and valid
+            if(accessToken.isPresent()&& jwtService.getTokenData(accessToken.get(), TokenData::isValid)) {
+                //Set the authentication in the current thread
+                SecurityContextHolder.getContext().setAuthentication(getAuthentication(accessToken.get(), request)); 
+                //Tell it who is logged in
+                RequestContext.setUserId(jwtService.getTokenData(accessToken.get(), TokenData::getUser).getId());
+            }else {
+        }
+```
+
+> What is a securityContextholder and what is the use.
+
+The getAuthentication method that helps to get the authentication before we set it into the securityContextHolder
+is a helper method that takes in a token and a request object and returns an authentication object.
+```java
+  private Authentication getAuthentication(String token, HttpServletRequest request) {
+        var authentication = ApiAuthentication.authenticated(jwtService.getTokenData(token, TokenData::getUser), jwtService.getTokenData(token, TokenData::getAuthorities));
+        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        return authentication;
+    }
+```
+
+So what we want to do next is that whenever the Access token is false or expired meaning if its not present, then 
+we are going to look for the refresh token and then from the refresh token we will generate a new access token.
 
