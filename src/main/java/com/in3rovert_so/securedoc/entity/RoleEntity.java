@@ -19,5 +19,5 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_DEFAULT;
 @JsonInclude(NON_DEFAULT)
 public class RoleEntity extends Auditable{
     private String name;
-    private Authority authorities; // Because we are going  to need to define authorires for each roles and they will be ENUM.
+    private Authority authorities; // Because we are going  to need to define authorizes for each role and they will be ENUM.
 }

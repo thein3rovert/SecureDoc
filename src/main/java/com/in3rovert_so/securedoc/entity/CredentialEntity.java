@@ -27,7 +27,7 @@ public class CredentialEntity extends Auditable {
 
     @OneToOne(targetEntity = UserEntity.class, fetch = EAGER) //When ever we load the userEntity it will load
     //all user associated with the credentials.
-    @JoinColumn(name = "user_id", nullable = false) //We need the id specifically so we its just going tom
+    @JoinColumn(name = "user_id", nullable = false) //We need the id specifically so we its just going to
     //get the user_id from the userEntity.
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")

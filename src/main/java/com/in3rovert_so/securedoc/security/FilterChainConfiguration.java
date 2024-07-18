@@ -42,9 +42,10 @@ public class FilterChainConfiguration {
     //Todo: 2. Override the Auth Provider and the Authentication Manager
     @Bean
     public AuthenticationManager authenticationManager(UserDetailsService userDetailsService) {
-        MyOwnAuthenticationProvider myOwnAuthenticationProvider = new MyOwnAuthenticationProvider(userDetailsService);
+        //MyOwnAuthenticationProvider myOwnAuthenticationProvider = new MyOwnAuthenticationProvider(userDetailsService);
        // daoAuthenticationProvider.setUserDetailsService(userDetailsService);
-        return new ProviderManager(myOwnAuthenticationProvider);
+        //return new ProviderManager(myOwnAuthenticationProvider);
+        return null;
     }
     //Todo: 1. We need to tell spring these are our users
     //Overriding the User details Services
