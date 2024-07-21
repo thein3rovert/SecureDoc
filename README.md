@@ -2328,7 +2328,7 @@ so it it is, it just sets the UserId to the request context.
 ```
 
 So thats all for the filter for now, what we want to work on next is finsh up two more peice of the `filterchainConfiguration` before we can
-finsh up the comfoguration and this is going to happen here.
+finsh up the comfiguration and this is going to happen here.
 
 ```java
  @Bean
@@ -2341,3 +2341,16 @@ finsh up the comfoguration and this is going to happen here.
                 .build();
     }
 ```
+## Exception handler
+So the first piece we will finsh with today is the Exception handler, so we create a new package called
+handler and then a class called ApiAuthenticationHandle this class implement the AccessDeniedHandler and the 
+main aim of this class is to handle the exception that is thrown by the `doFilterInternal` method.
+
+Then we create a new class called the AuthenticationEntryPoint this class implemented the AuthenticationEntryPoint, the entry point is 
+where the athenticationis going to be throwing an exception if there is an exception and the accessdeniedhandler is for if we have  an access denied exception
+So thats all, basically just some overriding so that we can send the request we want to send the way we want it to to be sent. Doing this 
+becuase we want to always send the same response every single time incase we want to do some other logic with the errors.
+
+## Http Configurer
+So the next thing we want to do is, in other to make sure that we can keep the filterChainConfiguration a little bit cleaner, we will
+define something called an http configurer.
