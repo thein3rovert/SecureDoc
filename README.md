@@ -2354,3 +2354,21 @@ becuase we want to always send the same response every single time incase we wan
 ## Http Configurer
 So the next thing we want to do is, in other to make sure that we can keep the filterChainConfiguration a little bit cleaner, we will
 define something called an http configurer.
+
+So we created a new class called the `ApiHtttpConfigurer` and then we override two need methods in this class, 
+the `init` method and the `configure` method.
+
+The init method is where we do all our initialization like passing in our userdetails service or authtication provider and many more why.
+The configure is where we do all the configuration for the filter chain.
+So bascally we created a custom configurer for our API by setting up special filters like the authenntication provider and the 
+authentication manager to handle the auth and authorization of the Http requests.
+
+The AuthorizationFilter is a custom filter that is added before the UsernamePasswordAuthenticationFilter. It is responsible for performing authorization checks and validating access permissions for the incoming requests.
+
+The AuthenticationFilter is another custom filter that is added after the UsernamePasswordAuthenticationFilter. It is responsible for authenticating the user based on the provided credentials and generating a JWT token 
+for further authentication. It requires the authenticationConfiguration.getAuthenticationManager(), userService, and jwtService objects to perform its functions.
+
+By adding these filters, the code ensures that security checks are performed at the appropriate stages of the request processing pipeline, enhancing the overall security of the API.
+
+## Filter Chain Confing
+## Now that we have the Exception Handler, AuthenticationFilter and AuthorizationFilter we can add them to the filterChainConfiguration
