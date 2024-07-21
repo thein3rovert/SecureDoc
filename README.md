@@ -2370,5 +2370,38 @@ for further authentication. It requires the authenticationConfiguration.getAuthe
 
 By adding these filters, the code ensures that security checks are performed at the appropriate stages of the request processing pipeline, enhancing the overall security of the API.
 
-## Filter Chain Confing
+## Filter Chain Confiig 
 ## Now that we have the Exception Handler, AuthenticationFilter and AuthorizationFilter we can add them to the filterChainConfiguration
+So we dont need the authentication manager called in the filter chain anymore, because we now called the authentication manager
+in the ApiHttpConfigurer class.
+```java
+  public void configure(HttpSecurity http) throws Exception {
+        http.addFilterBefore(authorizationFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterAfter(new AuthenticationFilter(authenticationConfiguration.getAuthenticationManager(), userService, jwtService), UsernamePasswordAuthenticationFilter.class);
+    }
+```
+And also because we have our users in the database now we dont need the userdetailservice  also.
+```java
+    public UserDetailsService inMemoryUserDetailsManager() {
+        return  new InMemoryUserDetailsManager(
+                User.withUsername("Daniel")
+                        .password("letdanin")
+                        .roles("USER")
+                        .build(),
+                User.withUsername("james")
+                        .password("letjamesin")
+                        .roles("USER")
+                        .build()
+        );
+    }
+```
+So we basically working with the securityFilterChain method only, we will need the csrf and also the 
+corsConfigurer in the filter chain configuration and we also need to set the session to be stateless because  we 
+are dealing with token we dont have any cookie that we're tracking for the logged in user. We are still using the cookie 
+to save the token but we are not doing a cookie authentication.
+
+This code snippet defines a method securityFilterChain that configures security filters for HTTP requests. It sets up CSRF
+protection, CORS configuration, session management policy, exception handling, and authorization rules for various HTTP methods 
+and endpoints. Finally, it applies additional HTTP configurations and builds the security filter chain.
+
+## CORS CONFIG

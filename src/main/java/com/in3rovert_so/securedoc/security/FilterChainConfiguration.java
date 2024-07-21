@@ -1,8 +1,11 @@
 package com.in3rovert_so.securedoc.security;
 
+import com.in3rovert_so.securedoc.handler.ApiAccessDeniedHandler;
+import com.in3rovert_so.securedoc.handler.ApiAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -11,6 +14,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
@@ -19,12 +23,17 @@ import org.springframework.security.web.SecurityFilterChain;
 import java.util.List;
 
 import static com.in3rovert_so.securedoc.constant.Constants.LOGIN_PATH;
+import static com.in3rovert_so.securedoc.constant.Constants.PUBLIC_URLS;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class FilterChainConfiguration {
+
+    private final ApiAccessDeniedHandler apiAccessDeniedHandler;
+    private final ApiAuthenticationEntryPoint apiAuthenticationEntryPoint;
+    private final ApiHttpConfigurer httpConfigurer;
 
     //public static final String LOGIN_PATH = "/user/login";
 
@@ -33,50 +42,23 @@ public class FilterChainConfiguration {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
+                .cors(corsConfigurer -> corsConfigurer.configurationSource(null))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(exception ->
+                        exception.accessDeniedHandler(apiAccessDeniedHandler)
+                                .authenticationEntryPoint(apiAuthenticationEntryPoint))
                 .authorizeHttpRequests(request ->
-                        request.requestMatchers(LOGIN_PATH).permitAll() //For every http request that matches a specific pattern permit them.
+                        //Define every URL to open
+                        request.requestMatchers(PUBLIC_URLS).permitAll() //For every http request that matches a specific pattern permit them.
+                                .requestMatchers(HttpMethod.OPTIONS).permitAll()
+                                .requestMatchers(HttpMethod.DELETE, "/user/delete/**")
+                                .hasAnyAuthority("user:delete")
+                                .requestMatchers(HttpMethod.DELETE, "/document/delete/**")
+                                .hasAnyAuthority("document:delete")
                                 .anyRequest().authenticated()) //Any other user that does match "Authenticate them"
-                .build();
+                .apply(httpConfigurer)
+                return http.build();
     }
-    //Overriding the Auth Provider
-    //Todo: 2. Override the Auth Provider and the Authentication Manager
-    @Bean
-    public AuthenticationManager authenticationManager(UserDetailsService userDetailsService) {
-        //MyOwnAuthenticationProvider myOwnAuthenticationProvider = new MyOwnAuthenticationProvider(userDetailsService);
-       // daoAuthenticationProvider.setUserDetailsService(userDetailsService);
-        //return new ProviderManager(myOwnAuthenticationProvider);
-        return null;
-    }
-    //Todo: 1. We need to tell spring these are our users
-    //Overriding the User details Services
-//    @Bean
-//    public UserDetailsService userDetailsService() {
-//        //First User
-//        var daniel = User.withDefaultPasswordEncoder()
-//                .username("daniel")
-//                .password("{noop}letdanin")
-//                .roles("USER")
-//                .build();
-//        //Second User
-//        var james = User.withDefaultPasswordEncoder()
-//                .username("james")
-//                .password("{noop}letjamesin")
-//                .roles("USER")
-//                .build();
-//        return new InMemoryUserDetailsManager(List.of(daniel, james)); //Override the user in memory user details with our custom user.
-//    }
 
-    @Bean
-    public UserDetailsService inMemoryUserDetailsManager() {
-        return  new InMemoryUserDetailsManager(
-                User.withUsername("Daniel")
-                        .password("letdanin")
-                        .roles("USER")
-                        .build(),
-                User.withUsername("james")
-                        .password("letjamesin")
-                        .roles("USER")
-                        .build()
-        );
-    }
+
 }
