@@ -31,7 +31,7 @@ public class UserEntity extends Auditable {
     private LocalDateTime lastLogin;
     private String phone;
     private String bio;
-    private String ImageUrl;
+    private String imageUrl;
 
     // Fields needed for spring security.
     private boolean accountNonExpired; //This helps to load the user from database and use some of the values to create

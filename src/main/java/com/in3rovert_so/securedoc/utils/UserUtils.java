@@ -30,7 +30,7 @@ public class UserUtils {
                 .qrCodeSecret(EMPTY)
                 .phone(EMPTY)
                 .bio(EMPTY)
-                .ImageUrl("")
+                .imageUrl("")
                 .role(role)
                 .build();
 
@@ -44,8 +44,10 @@ public class UserUtils {
         user.setCredentialsNonExpired(isCredentialsNonExpired(credentialEntity));
         user.setCreatedAt(userEntity.getCreatedAt().toString());
         user.setUpdatedAt(userEntity.getUpdatedAt().toString());
-        user.setRoles(role.getName());
+        user.setRole(role.getName());
+        System.out.println(role.getName());
         user.setAuthorities(role.getAuthorities().getValue());
+        System.out.print(role.getAuthorities().getValue());
         return user;
     }
 

@@ -126,7 +126,7 @@ public class JwtServiceImpl extends JwtConfiguration implements JwtService {
                     builder.get()
                             .subject(user.getUserId()) // Set the subject of the token to the user's ID
                             .claim(AUTHORITIES, user.getAuthorities()) // Add the AUTHORITIES claim with the user's authorities
-                            .claim(ROLE, user.getRoles()) // Add the ROLE claim with the user's roles
+                            .claim(ROLE, user.getRole()) // Add the ROLE claim with the user's roles
                             .expiration(Date.from(now().plusSeconds(getExpiration()))) // Set the expiration time of the token
                             .compact() : // Build the token
                     // Build the token without additional claims if its a refresh token

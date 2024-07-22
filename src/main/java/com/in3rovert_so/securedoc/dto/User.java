@@ -17,12 +17,12 @@ public class User {
         private String email;
         private String phone;
         private String bio;
-        private String ImageUrl;
+        private String imageUrl;
         private String qrCodeImageUrl;
         private String lastLogin;
         private String createdAt;
         private String updatedAt;
-        private String roles;
+        private String role;
         private String authorities;
         private boolean accountNonExpired;
         private boolean accountNonLocked;
