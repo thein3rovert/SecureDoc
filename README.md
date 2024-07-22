@@ -2405,3 +2405,20 @@ protection, CORS configuration, session management policy, exception handling, a
 and endpoints. Finally, it applies additional HTTP configurations and builds the security filter chain.
 
 ## CORS CONFIG
+This code defines a method corsConfigurationSource that creates and configures a CORS (Cross-Origin Resource Sharing) configuration. 
+It sets allowed origins, headers, methods, and max age for CORS requests, and registers this configuration with a 
+UrlBasedCorsConfigurationSource object.
+```java
+    public CorsConfigurationSource corsConfigurationSource() {
+        var corsConfiguration = new CorsConfiguration();
+        corsConfiguration.setAllowCredentials(true);
+        corsConfiguration.setAllowedOrigins(List.of("http://-.com", "http://localhost:4200", "http://localhost:3000"));
+        corsConfiguration.setAllowedHeaders(Arrays.asList(ORIGIN, ACCESS_CONTROL_ALLOW_ORIGIN, CONTENT_TYPE, ACCEPT, AUTHORIZATION, X_REQUESTED_WITH, ACCESS_CONTROL_REQUEST_METHOD, ACCESS_CONTROL_REQUEST_HEADERS, ACCESS_CONTROL_ALLOW_CREDENTIALS, FILE_NAME));
+        corsConfiguration.setExposedHeaders(Arrays.asList(ORIGIN, ACCESS_CONTROL_ALLOW_ORIGIN, CONTENT_TYPE, ACCEPT, AUTHORIZATION, X_REQUESTED_WITH, ACCESS_CONTROL_REQUEST_METHOD, ACCESS_CONTROL_REQUEST_HEADERS, ACCESS_CONTROL_ALLOW_CREDENTIALS, FILE_NAME));
+        corsConfiguration.setAllowedMethods(Arrays.asList(GET.name(), POST.name(), PUT.name(), PATCH.name(), DELETE.name(), OPTIONS.name()));
+        corsConfiguration.setMaxAge(3600L);
+        var source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration(BASE_PATH, corsConfiguration);
+        return source;
+    }
+```
