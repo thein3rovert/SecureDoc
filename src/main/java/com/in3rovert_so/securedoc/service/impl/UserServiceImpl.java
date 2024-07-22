@@ -16,7 +16,6 @@ import com.in3rovert_so.securedoc.repository.CredentialRepository;
 import com.in3rovert_so.securedoc.repository.RoleRepository;
 import com.in3rovert_so.securedoc.repository.UserRepository;
 import com.in3rovert_so.securedoc.service.UserService;
-import com.in3rovert_so.securedoc.utils.UserUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -57,6 +56,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public RoleEntity getRoleName(String name) {
         var role = roleRepository.findByNameIgnoreCase(name); //Get the name of the roles.
+        System.out.println("The user is " + role);
         return role.orElseThrow(() -> new ApiException("Role is not found"));
     }
     //..............................
@@ -65,6 +65,7 @@ public class UserServiceImpl implements UserService {
     public void verifyAccountKey(String key) {
         var confirmationEntity = getUserConfirmation(key);
         var userEntity = getUserEntityByEmail(confirmationEntity.getUserEntity().getEmail());
+        System.out.println("User account has just been verified" + userEntity);
         userEntity.setEnabled(true);
         userRepository.save(userEntity);
         confirmationRepository.delete(confirmationEntity);
@@ -73,6 +74,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void updateLoginAttempt(String email, LoginType loginType) {
         var userEntity = getUserEntityByEmail(email);
+        System.out.println("Here is the email" + userEntity);
         RequestContext.setUserId(userEntity.getId()); //Set the userId in the request context because we are going to save iin the database we know who did.
         switch (loginType) {
             case LOGIN_ATTEMPT -> {
@@ -81,7 +83,9 @@ public class UserServiceImpl implements UserService {
                     userEntity.setLoginAttempts(0);
                     userEntity.setAccountNonLocked(true);
                 }
-                userEntity.setLoginAttempts(userEntity.getLoginAttempts() + 1); //If user is in the cache add 1 mto their login attempt
+                System.out.println("User Entity before update" + userEntity);
+                userEntity.setLoginAttempts(userEntity.getLoginAttempts() + 1);
+                System.out.println("User Entity after attempt" + userEntity);//If user is in the cache add 1 mto their login attempt
                 userCache.put(userEntity.getEmail(), userEntity.getLoginAttempts());//Then put their email and their login attempt in the cache.
                 if (userCache.get(userEntity.getEmail()) > 5) { //if the cache is greater than 5, meaning if the user login more than 5 time
                     userEntity.setAccountNonLocked(false);//Lock the user account.
@@ -94,12 +98,13 @@ public class UserServiceImpl implements UserService {
                 userCache.evict(userEntity.getEmail());
             }
         }
+        System.out.println("User Entity before saved to db" + userEntity);
         userRepository.save(userEntity);
     }
     //Retrieve users based on their id
     @Override
     public User getUserByUserId(String userId) {
-        var userEntity = userRepository.findUserByUserId(userId).orElseThrow(() -> new ApiException("User not found"));
+        var userEntity = userRepository.findUserByUserId(userId).orElseThrow(() -> new ApiException("User Id cannot found"));
         return fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
     }
 
@@ -113,13 +118,13 @@ public class UserServiceImpl implements UserService {
     //Retrieve users credentials based on their id
     @Override
     public CredentialEntity getUserCredentialById(Long userId) {
-       var credentialById = credentialRepository.getCredentialEntitiesById(userId);
+       var credentialById = credentialRepository.getCredentialByUserEntityId(userId);
         return credentialById.orElseThrow(()-> new ApiException("Unable to find user credentials"));
     }
 
     private UserEntity getUserEntityByEmail(String email) {
         var userByEmail = userRepository.findByEmailIgnoreCase(email);
-        return userByEmail.orElseThrow(() -> new ApiException("User not Found"));
+        return userByEmail.orElseThrow(() -> new ApiException("User not Found, UserEntity cannot be found by email"));
     }
 
     private ConfirmationEntity getUserConfirmation(String key) {
@@ -131,6 +136,7 @@ public class UserServiceImpl implements UserService {
     //Creating helper method for the createNewUser method
     private UserEntity createNewUser(String firstName, String lastName, String email) {
         var role = getRoleName(Authority.USER.name()); //Find a role in the database by the name USER
+        System.out.print(createUserEntity("The roles" + firstName, lastName, email, role));//Todo: Create the method
         return createUserEntity(firstName, lastName, email, role); //Todo: Create the method
     }
 }

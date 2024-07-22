@@ -50,7 +50,10 @@ public class AuthenticationFilter extends AbstractAuthenticationProcessingFilter
             //Grab the user information to create the authentication after getting the login types
             var user = new ObjectMapper().configure(AUTO_CLOSE_SOURCE, true).readValue(request.getInputStream(), LoginRequest.class);
             userService.updateLoginAttempt(user.getEmail(), LOGIN_ATTEMPT);
+            System.out.println("The email before login attempt " + user.getEmail() + " " + LOGIN_ATTEMPT);
             var authentication = ApiAuthentication.unauthenticated(user.getEmail(), user.getPassword());
+            System.out.println(authentication);
+
             //Pass the credentials to the authentication manager
             return getAuthenticationManager().authenticate(authentication);
         } catch (Exception exception) {
@@ -75,6 +78,7 @@ public class AuthenticationFilter extends AbstractAuthenticationProcessingFilter
         // super.successfulAuthentication(request, response, chain, authentication);
         // Get the authenticated user
         var user = (User) authentication.getPrincipal();
+        System.out.println("User to be authenticated" + user);
         // Update the user's login attempt
         userService.updateLoginAttempt(user.getEmail(), LOGIN_SUCCESS);
         // Determine response based on MFA status
