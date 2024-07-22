@@ -24,7 +24,7 @@ public class Application {
 	@Bean
 	CommandLineRunner commandLineRunner(RoleRepository roleRepository) {
 		return args -> {
-		//RequestContext.setUserId(0L);
+//		RequestContext.setUserId(0L);
 //			var userRole = new RoleEntity();
 //			userRole.setName(Authority.USER.name());
 //			userRole.setAuthorities(Authority.USER);

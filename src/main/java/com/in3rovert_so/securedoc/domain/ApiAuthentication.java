@@ -28,9 +28,10 @@ public class ApiAuthentication extends AbstractAuthenticationToken { //Renamed: 
     //Create constructor
     private ApiAuthentication(String email, String password) {
         super(AuthorityUtils.NO_AUTHORITIES);
-        this.password = email;
-        this.email = password;
+        this.email = email;
+        this.password = password;
         this.authenticated = false;
+        //Fixed unable yo find userEntity error
     }
     private  ApiAuthentication(User user, Collection<? extends GrantedAuthority> authorities) {
         super(authorities);

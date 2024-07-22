@@ -25,7 +25,7 @@ spring:
         hibernate:
           globally_quoted_identifiers: true
           dialect: org.hibernate.dialect.PostgreSQLDialect
-          format_sql: tru
+          format_sql: true
     sql:
       init:
         mode: never

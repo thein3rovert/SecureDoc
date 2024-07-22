@@ -43,10 +43,10 @@ public class MyOwnAuthenticationProvider implements AuthenticationProvider {
      * Consumer to validate user account status.
      */
     private final Consumer<UserPrincipal> validAccount = userPrincipal -> {
-        if(userPrincipal.isAccountNonLocked()) {throw new LockedException("Your account is currently locked");}
-        if(userPrincipal.isEnabled()) {throw new DisabledException("Your account is currently disabled");}
-        if(userPrincipal.isCredentialsNonExpired()) {throw new CredentialsExpiredException("Your account has expired please contact the account admin");}
-        if(userPrincipal.isAccountNonExpired()) {throw new DisabledException("Your account is currently locked");}
+        if(!userPrincipal.isAccountNonLocked()) {throw new LockedException("Your account is currently locked");}
+        if(!userPrincipal.isEnabled()) {throw new DisabledException("Your account is currently disabled");}
+        if(!userPrincipal.isCredentialsNonExpired()) {throw new CredentialsExpiredException("Your account has expired please contact the account admin");}
+        if(!userPrincipal.isAccountNonExpired()) {throw new DisabledException("Your account is currently expired. Please contact the admin");}
     };
 
     /**
@@ -60,6 +60,7 @@ public class MyOwnAuthenticationProvider implements AuthenticationProvider {
         var apiAuthentication = authenticationFunction.apply(authentication);
 
         var user = userService.getUserByEmail(apiAuthentication.getEmail()); //User we are going to pass in as the logged in user
+        System.out.println("User to be validated are: " + user);
         if (user != null) {
             var userCredential = userService.getUserCredentialById(user.getId());
             //After getting the credentials we have to check if the credentials is expired.
@@ -67,8 +68,11 @@ public class MyOwnAuthenticationProvider implements AuthenticationProvider {
                 throw new ApiException("Credentials are expired please reset your password");
             }
             var userPrincipal = new UserPrincipal(user, userCredential);
+            System.out.println("User principals to be validated are " + userPrincipal);
             validAccount.accept(userPrincipal);
-            if(encoder.matches(apiAuthentication.getPassword(), userCredential.getPassword())) {
+            System.out.println(apiAuthentication.getPassword() + " " + userCredential.getPassword());
+            if(!encoder.matches(apiAuthentication.getPassword(), userCredential.getPassword())) {
+                System.out.println("Password dont match" + apiAuthentication.getPassword() + " " + userCredential.getPassword());
                 return ApiAuthentication.authenticated(user, userPrincipal.getAuthorities());
             } else throw new ApiException("Bad Credentials(Email and /or password incorrect. Please try again");
         } throw new ApiException("Unable to authenticate user");
