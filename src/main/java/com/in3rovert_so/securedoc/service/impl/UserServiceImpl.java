@@ -46,8 +46,10 @@ public class UserServiceImpl implements UserService {
     public void createUser(String firstName, String lastName, String email, String password) {
         var userEntity = userRepository.save(createNewUser(firstName, lastName, email)); //Todo: Create the createNewUser helper method.
         var credentialEntity = new CredentialEntity(userEntity, password);
+        System.out.println("User credential entity can be found here" + credentialEntity);
         credentialRepository.save(credentialEntity);
         var confirmationEntity = new ConfirmationEntity(userEntity);
+        System.out.println("User credential entity can be found here" + confirmationEntity);
         confirmationRepository.save(confirmationEntity);
         publisher.publishEvent(new UserEvent(userEntity, REGISTRATION, Map.of("key", confirmationEntity.getKey())));
         System.out.println("Confirmation Token" + confirmationEntity.getKey());
@@ -64,12 +66,15 @@ public class UserServiceImpl implements UserService {
     @Override
     public void verifyAccountKey(String key) {
         var confirmationEntity = getUserConfirmation(key);
+        System.out.println("The user confirmation key for verification is " + confirmationEntity);
         var userEntity = getUserEntityByEmail(confirmationEntity.getUserEntity().getEmail());
         System.out.println("User account has just been verified" + userEntity);
         userEntity.setEnabled(true);
         userRepository.save(userEntity);
-        confirmationRepository.delete(confirmationEntity);
+        System.out.println("User entibty to be saved to the database" + userEntity);
+        //confirmationRepository.delete(confirmationEntity);
     }
+
 
     @Override
     public void updateLoginAttempt(String email, LoginType loginType) {

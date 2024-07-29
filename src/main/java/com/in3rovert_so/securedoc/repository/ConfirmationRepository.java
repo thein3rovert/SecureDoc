@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 @Repository
 public interface ConfirmationRepository extends JpaRepository<ConfirmationEntity, Long> {
-    Optional<ConfirmationEntity> findByKey(String key);
+    Optional<ConfirmationEntity>findByKey(String key);
 
     Optional<ConfirmationEntity>findByUserEntity(UserEntity userEntity);
 }
