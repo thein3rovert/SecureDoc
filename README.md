@@ -2422,3 +2422,36 @@ UrlBasedCorsConfigurationSource object.
         return source;
     }
 ```
+ # Mutifactor Authentication
+So far we have been able to register a user and also login the user, we've encountred quite a few error along the way, 
+like the user not found error, confirmation not found error, role not found error and also credential not found error.
+Most of these error a linked to the repo class, and due to some variabnles spelt wrong. In other to solce these error i used
+a basic debugging skill like printing out each line and tracing the not found error, it was quiter useful but the downside is the 
+time taken. 
+
+So now what we are going to work on is, the MFA, allowin users to set multifactor authentication, and enabling their
+multifactor authentication, so thats what we are going to do.
+
+So the first thing we did was create the endpoints that are going to be responsible for the MFA, 
+The setupMfa endopoint, for creating MFA for the user and the Cancel endpoint for cancelling endpoint.
+
+```java
+    @PatchMapping("/mfa/setup")
+    public ResponseEntity<Response> setupMfa(@AuthenticationPrincipal User userPrincipal, HttpServletRequest request) {
+        var user = userService.setUpMfa(userPrincipal.getId()); //Set up mfa for each specific id
+        return ResponseEntity.ok().body(getResponse(request, Map.of("user", user), "Mfa set up successfully", OK));
+    }
+```
+```java
+    @PatchMapping("/mfa/cancel")
+    public ResponseEntity<Response> cancelMfa(@AuthenticationPrincipal User userPrincipal, HttpServletRequest request) {
+        var user = userService.cancelMfa(userPrincipal.getId());
+        return ResponseEntity.ok().body(getResponse(request, Map.of("user", user), "User MFA cancel successfully", OK));
+    }
+```
+In the both endpoint we created two helper method, the setupMfa method and the canclMfa method, 
+this method will define the logic for both methods, so what we are going to be working on next is putting 
+an implementation for this method.
+
+
+
