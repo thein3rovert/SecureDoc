@@ -2453,5 +2453,17 @@ In the both endpoint we created two helper method, the setupMfa method and the c
 this method will define the logic for both methods, so what we are going to be working on next is putting 
 an implementation for this method.
 
+# QR Code Utils
+Today we will be working on the QR code utils, so we creat a method and two helper method,qrcodeimageuri this method help to create qrcode uri, then we defined
+an helper method qrDataFunction, this helper method will help in the creation of the qr data, which will then be used in
+the imageuri method to generate the data for the QR code. 
+
+After we then defined a methood called qr code secret, this method helps basically to generate the qr code secret.
+So overall, we have a way to get the secret to the qrcode, we have a way to get the QRcodeImageUri and we also have a 
+way to get the data that will be passed to the imageUri, the data we generate is when we use in creating the uri. 
+
+So what we are going to do next is give an implementation for the method, setUpMfa and cancelMfa making use of the utils
+method just created.
+ 
 
 
