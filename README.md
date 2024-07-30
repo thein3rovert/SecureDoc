@@ -2465,5 +2465,37 @@ way to get the data that will be passed to the imageUri, the data we generate is
 So what we are going to do next is give an implementation for the method, setUpMfa and cancelMfa making use of the utils
 method just created.
  
+# Multifactor Authentication 2 
+The setupMfa method is takes in parameter Long, then it first retrived the userEntity object associated  with the give id, 
+using the getUserEntityById Method, then it retrieved a secret code using the qrCodeSecret.get method, more about the
+mentioned method can be found in the QR Code util section.
+
+Next, it sets the qrCodeImageUri and qrCodeSecret properties of the userEntity object with the retrieved values. 
+it also sets the mfa property to true.
+
+After that, it saves the updated userEntity object in the repository using userRepository.save(userEntity).
+Finally it then return a User object created by calling the fromUserEntity method with the userEntity.
+
+Similar this was also done for the CancelMfa, we get the userEntity asscoaited with the id of the user, then we
+set the mfa to false and then the qrcode and the qrcode secret to empty, then we save the userEntity to the database, 
+this will delete the mfa record in the database.
+
+After we tested the setupMfa endpoint and also the cancelMfa endpoint, by providing the user login details, and 
+we were able to get a qrcodeimageUri for the user and also send the MFA to true, so after we then copy the qrcodeimageuri
+and pasted in into the browser which then displayed the QR image. 
+![img_19.png](src%2Fmain%2Fresources%2Fassets%2Fimg_19.png)
+![img_20.png](src%2Fmain%2Fresources%2Fassets%2Fimg_20.png)
+![img_21.png](src%2Fmain%2Fresources%2Fassets%2Fimg_21.png)
+We futher confirmed the QR code image by scanning the QR code with Google Authenticator app, which then generates 
+a code.
+![img_18.png](src%2Fmain%2Fresources%2Fassets%2Fimg_18.png)
+
+The next thing we going to be working on is verifying the QR code.
+
+## QR Verification
+
+
+
+
 
 

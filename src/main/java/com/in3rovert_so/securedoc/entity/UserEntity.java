@@ -44,7 +44,7 @@ public class UserEntity extends Auditable {
     private String qrCodeSecret;
 
     @Column(columnDefinition = "text")
-    private String qrCodeImageUrl;
+    private String qrCodeImageUri;
 
     @ManyToOne(fetch = FetchType.EAGER)
     //Many user can only have one role,  the Eager means when ever we load a user, we want

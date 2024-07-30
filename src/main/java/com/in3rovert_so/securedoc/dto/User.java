@@ -18,7 +18,7 @@ public class User {
         private String phone;
         private String bio;
         private String imageUrl;
-        private String qrCodeImageUrl;
+        private String qrCodeImageUri;
         private String lastLogin;
         private String createdAt;
         private String updatedAt;

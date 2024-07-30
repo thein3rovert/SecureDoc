@@ -26,9 +26,9 @@ import org.springframework.stereotype.Service;
 import java.util.Map;
 
 import static com.in3rovert_so.securedoc.enumeration.EventType.REGISTRATION;
-import static com.in3rovert_so.securedoc.utils.UserUtils.createUserEntity;
-import static com.in3rovert_so.securedoc.utils.UserUtils.fromUserEntity;
+import static com.in3rovert_so.securedoc.utils.UserUtils.*;
 import static java.time.LocalDateTime.now;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Service
 @Transactional(rollbackOn = Exception.class) //Any Exception that occurs roll everything back.
@@ -128,13 +128,31 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User cancelMfa(Long id) {
-        return null;
+    public User setUpMfa(Long id) {
+        //Lets get the user entity
+        var userEntity = getUserEntityById(id);
+        //Now let get the secret
+        var codeSecret = qrCodeSecret.get();
+        userEntity.setQrCodeImageUri(qrCodeImageUri.apply(userEntity.getEmail(), codeSecret));
+        userEntity.setQrCodeSecret(codeSecret);
+        userEntity.setMfa(true);
+        userRepository.save(userEntity);
+        return fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
     }
 
     @Override
-    public User setUpMfa(Long id) {
-        return null;
+    public User cancelMfa(Long id) {
+        //Lets get the user entity
+        var userEntity = getUserEntityById(id);
+        userEntity.setMfa(false);
+        userEntity.setQrCodeImageUri(EMPTY);
+        userEntity.setQrCodeSecret(EMPTY);
+        userRepository.save(userEntity);
+        return fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
+    }
+    private UserEntity getUserEntityById(Long id) {
+        var userById = userRepository.findById(id);
+        return userById.orElseThrow(() -> new ApiException("User not found for MFA uses"));
     }
 
     private UserEntity getUserEntityByEmail(String email) {
