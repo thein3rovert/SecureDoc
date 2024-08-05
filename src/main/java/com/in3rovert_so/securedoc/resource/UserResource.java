@@ -1,10 +1,14 @@
 package com.in3rovert_so.securedoc.resource;
 
 import com.in3rovert_so.securedoc.domain.Response;
+import com.in3rovert_so.securedoc.dto.QrCodeRequest;
 import com.in3rovert_so.securedoc.dto.User;
 import com.in3rovert_so.securedoc.dtorequest.UserRequest;
+import com.in3rovert_so.securedoc.enumeration.TokenType;
+import com.in3rovert_so.securedoc.service.JwtService;
 import com.in3rovert_so.securedoc.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +29,8 @@ import static org.springframework.http.HttpStatus.OK;
 public class UserResource {
     private final UserService userService;
 
+    //Because we need to pass in the cookie in the response we need to call the JWT services
+    private final JwtService jwtservice
     @PostMapping("/register")
     public ResponseEntity<Response> saveUser(@RequestBody @Valid UserRequest user, HttpServletRequest request) {
         userService.createUser(user.getFirstName(), user.getLastName(), user.getEmail(), user.getPassword());
@@ -46,6 +52,14 @@ This endpoints is going to all us to set up mfa, and user need to be logged in b
         var user = userService.cancelMfa(userPrincipal.getId());
         return ResponseEntity.ok().body(getResponse(request, Map.of("user", user), "User MFA cancel successfully", OK));
     }
+    @PostMapping("/verify/qrcode")
+    public ResponseEntity<Response> verifyQrcode(@RequestBody QrCodeRequest qrCodeRequest, HttpServletResponse response, HttpServletRequest request) {
+        var user = userService.verifyQrCode(qrCodeRequest.getUserId(), qrCodeRequest.getQrCode());
+        jwtservice.addCookie(response, user, TokenType.ACCESS);
+        jwtservice.addCookie(response, user, TokenType.REFRESH);
+        return ResponseEntity.ok().body(getResponse(request, Map.of("user", user), "User Qr code verified", OK));
+    }
+
     @GetMapping("/verify/account")
     public ResponseEntity<Response> verifyAccount(@RequestParam("key") String key, HttpServletRequest request) {
         userService.verifyAccountKey(key);

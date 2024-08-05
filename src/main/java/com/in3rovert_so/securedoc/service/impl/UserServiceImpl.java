@@ -16,6 +16,12 @@ import com.in3rovert_so.securedoc.repository.CredentialRepository;
 import com.in3rovert_so.securedoc.repository.RoleRepository;
 import com.in3rovert_so.securedoc.repository.UserRepository;
 import com.in3rovert_so.securedoc.service.UserService;
+import dev.samstevens.totp.code.CodeGenerator;
+import dev.samstevens.totp.code.CodeVerifier;
+import dev.samstevens.totp.code.DefaultCodeGenerator;
+import dev.samstevens.totp.code.DefaultCodeVerifier;
+import dev.samstevens.totp.time.SystemTimeProvider;
+import dev.samstevens.totp.time.TimeProvider;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -138,6 +144,30 @@ public class UserServiceImpl implements UserService {
         userEntity.setMfa(true);
         userRepository.save(userEntity);
         return fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
+    }
+
+    //Perform Qrcode verification
+    @Override
+    public User verifyQrCode(String userId, String qrCode) {
+        var userEntity = getUserEntityByUserId(userId);
+        verifyCode(qrCode, userEntity.getQrCodeSecret());
+        return fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId());
+    }
+    //Verify the codes
+    private boolean verifyCode(String qrCode, String qrCodeSecret) {
+        TimeProvider timeProvider = new SystemTimeProvider();
+        CodeGenerator codeGenerator = new DefaultCodeGenerator();
+        CodeVerifier codeVerifier = new DefaultCodeVerifier(codeGenerator, timeProvider);
+        if (codeVerifier.isValidCode(qrCodeSecret, qrCode)) {
+            return true;
+        } else {
+            throw new ApiException("Invalid QR code. Please try again")
+        }
+    }
+
+    private UserEntity getUserEntityByUserId(String userId) {
+        var userByUserId = userRepository.findUserByUserId(userId);
+        return userByUserId.orElseThrow(() -> new ApiException("User not found for qr verification"))
     }
 
     @Override

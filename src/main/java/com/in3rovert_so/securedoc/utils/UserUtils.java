@@ -44,7 +44,7 @@ public class UserUtils {
                 .role(role)
                 .build();
 
-    } //Todo: Create the method
+    }
 
 
     public static User fromUserEntity(UserEntity userEntity, RoleEntity role, CredentialEntity credentialEntity) {
@@ -77,7 +77,9 @@ public class UserUtils {
 
     // 1 Create the qrcode uri
     public static BiFunction<String, String, String> qrCodeImageUri = (email, qrCodeSecret) -> {
+        //Takes in a QRCode data
         var data = qrDataFunction.apply(email, qrCodeSecret);
+        //Then generate the QrCode Image
         var generator = new ZxingPngQrGenerator();
         byte[] imageData;
         try {
@@ -87,7 +89,8 @@ public class UserUtils {
         }
         return getDataUriForImage(imageData, generator.getImageMimeType());
     };
-    //3 create the qr code secret
+
+    //3 create the qr code secret code used for QRCode Generation
     public static Supplier<String> qrCodeSecret = () -> new DefaultSecretGenerator().generate(); // This will generate the secret
 
 }

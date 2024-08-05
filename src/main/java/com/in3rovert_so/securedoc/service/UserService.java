@@ -21,4 +21,6 @@ public interface UserService {
     User cancelMfa(Long id);
 
     User setUpMfa(Long id);
+
+    User verifyQrCode(String userId, String qrCode);
 }

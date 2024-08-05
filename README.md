@@ -2493,6 +2493,42 @@ a code.
 The next thing we going to be working on is verifying the QR code.
 
 ## QR Verification
+Notes - make sure to add the doc explanation
+We created a `verfiyQrCode` methood in the `UserService` then implemented the method, the method takes in a userID and also 
+a `QRcode`, because we want to get the userEntity we had to create a new `getUserEntityByUserId` method, which we use in geting 
+the userId. 
+```java
+    public User verifyQrCode(String userId, String qrCode) {
+        var userEntity = getUserEntityByUserId(userId);
+        verifyCode(qrCode, userEntity.getQrCodeSecret());
+        return fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId());
+    }
+```
+```java
+    private UserEntity getUserEntityByUserId(String userId) {
+        var userByUserId = userRepository.findUserByUserId(userId);
+        return userByUserId.orElseThrow(() -> new ApiException("User not found for qr verification"))
+    }
+```
+This method get the userId xssciate with the user from the database, then after created a new helper method called
+`verifyCode` this method is a boolean method, that takes in a qrCode and a qrCodeSecret, this method makes use of the
+TimeProvider, CodeGenerator and the CodeVerifier method, this method use the codeVerifier to verify the generatedCode 
+and the timeProvider, then it check if the qrCodeSecrrt and the QrCode are valid, if they are it returns true and vice 
+versal.
+```java
+ private boolean verifyCode(String qrCode, String qrCodeSecret) {
+        TimeProvider timeProvider = new SystemTimeProvider();
+        CodeGenerator codeGenerator = new DefaultCodeGenerator();
+        CodeVerifier codeVerifier = new DefaultCodeVerifier(codeGenerator, timeProvider);
+        if (codeVerifier.isValidCode(qrCodeSecret, qrCode)) {
+            return true;
+        } else {
+            throw new ApiException("Invalid QR code. Please try again")
+        }
+    }
+```
+Now we are ready to verfiy the QR code whenever we send a request to the verfyQrCode method endpoints, kso what we are going to do 
+now is test these all the method resposible for the MFA.
 
 
 
