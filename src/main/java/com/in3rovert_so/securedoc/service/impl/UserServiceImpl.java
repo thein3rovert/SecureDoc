@@ -34,6 +34,7 @@ import java.util.Map;
 import static com.in3rovert_so.securedoc.enumeration.EventType.REGISTRATION;
 import static com.in3rovert_so.securedoc.enumeration.EventType.RESETPASSWORD;
 import static com.in3rovert_so.securedoc.utils.UserUtils.*;
+import static com.in3rovert_so.securedoc.validation.UserValidation.verifyAccountStatus;
 import static java.time.LocalDateTime.now;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
@@ -221,7 +222,16 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User verifyPasswordKey(String key) {
-        return null;
+        // Find the confirmation entity in the database, it confirmation not found
+        var confirmationEntity = getUserConfirmation(key);
+        if (confirmationEntity == null) { throw new ApiException("Unable to find the token (key) for confirmation");}
+        // If the confirmation is found
+        var userEntity = getUserEntityByEmail(confirmationEntity.getUserEntity().getEmail());
+        // If userEntity not found
+        if (userEntity == null) { throw new ApiException("Incorrect token)key");}
+        verifyAccountStatus(userEntity);
+        confirmationRepository.delete(confirmationEntity);
+        return fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
     }
 
     private ConfirmationEntity getUserConfirmation(UserEntity user) {

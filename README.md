@@ -2607,6 +2607,9 @@ So after the implementamtion of this method we just tested  the endpoint and all
 ![resetEmailTestingAPI.png](src%2Fmain%2Fresources%2Fassets%2FresetEmailTestingAPI.png)
 ![emailtesting.png](src%2Fmain%2Fresources%2Fassets%2Femailtesting.png).
 
+# Verify Reset Password 
+
+### Endpoint
 So the next thing we want to work on is the actiavtion of the link send to the email so user can enter a new password, we created a 
 new endpoint `verifyResetPassword` this method handles the POST request to the verifypassword endpoints, it also expected a 
 query parameter with name "key" this key is a uuid generated, the method then calls thee verifyPasswordkey method in the 
@@ -2620,4 +2623,47 @@ public ResponseEntity<Response> verifyResetPassword(@RequestParam("key") String 
 } 
 ```
 So the next thing we want to work on is the implementantion of the `verifyPasswordKey` method.
+### Implementation
+
+The `verifyPasswordKey` takes in a key as parmeter, the method first tires to find the `confirmationEntity` by passing it the key
+then, it checks if the key exist or not, if the key is not found meaning of its null , it throws an Apiexception error, if the key
+is found it then tires to get the userEntity by passing it the email. 
+An addtional conditon for when the userEntity is not found, if its not found then that means the key passes is incorrect so it throws 
+a new api exception error, however if the userEntity is found it then `verifyAccontStatus`, which is a method that checks if the user
+account is enable, locked and expired.
+```java
+    public static void verifyAccountStatus(UserEntity user) {
+        if (!user.isEnabled()) {
+            throw new ApiException("User Account is disable, unable to verify ResetPassword cannot be verified");
+        }
+        if (!user.isAccountNonExpired()) {
+            throw new ApiException("User Account is Expired, unable to verify ResetPassword");
+        }
+        if (!user.isAccountNonLocked()) {
+            throw new ApiException("User Account is Locked, unable to verify ResetPassword");
+        }
+```
+After it verify's the account status of the user, it then delete the confirmationEntity from the database and returns a User Object.
+```java
+   @Override
+    public User verifyPasswordKey(String key) {
+        // Find the confirmation entity in the database, it confirmation not found
+        var confirmationEntity = getUserConfirmation(key);
+        if (confirmationEntity == null) { throw new ApiException("Unable to find the token (key) for confirmation");}
+        // If the confirmation is found
+        var userEntity = getUserEntityByEmail(confirmationEntity.getUserEntity().getEmail());
+        // If userEntity not found
+        if (userEntity == null) { throw new ApiException("Incorrect token)key");}
+        verifyAccountStatus(userEntity);
+        confirmationRepository.delete(confirmationEntity);
+        return fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
+    }
+```
+![verifyAccountReset.png](src%2Fmain%2Fresources%2Fassets%2FverifyAccountReset.png)
+
+So now what we have to do next is to allow users to change their password, for now that can only enter request to change passsword, 
+enter a new password when verified but now we need them to be able to change their password, that is what we are goign to be working
+on next.
+
+
 

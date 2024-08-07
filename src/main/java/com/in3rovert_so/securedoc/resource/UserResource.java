@@ -76,7 +76,7 @@ This endpoints is going to all us to set up mfa, and user need to be logged in b
         userService.resetPassword(emailRequest.getEmail());
         return ResponseEntity.ok().body(getResponse(request, emptyMap(), "Kindly check your email for the link to reset your password", OK));
     }
-    @PostMapping("/verify/password")
+    @GetMapping("/verify/password")
     public ResponseEntity<Response> verifyResetPassword(@RequestParam("key") String key, HttpServletRequest request) {
        var user =  userService.verifyPasswordKey(key);
         return ResponseEntity.ok().body(getResponse(request, of("user", user), "Kindly enter a new password", OK));
