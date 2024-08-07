@@ -25,4 +25,6 @@ public interface UserService {
     User verifyQrCode(String userId, String qrCode);
 
     void resetPassword(String email);
+
+    User verifyPasswordKey(String key);
 }

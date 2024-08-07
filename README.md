@@ -2607,4 +2607,17 @@ So after the implementamtion of this method we just tested  the endpoint and all
 ![resetEmailTestingAPI.png](src%2Fmain%2Fresources%2Fassets%2FresetEmailTestingAPI.png)
 ![emailtesting.png](src%2Fmain%2Fresources%2Fassets%2Femailtesting.png).
 
-So the next thing we want to work on is the actiavtion of the link send to the email so user can enter a new passoword
+So the next thing we want to work on is the actiavtion of the link send to the email so user can enter a new password, we created a 
+new endpoint `verifyResetPassword` this method handles the POST request to the verifypassword endpoints, it also expected a 
+query parameter with name "key" this key is a uuid generated, the method then calls thee verifyPasswordkey method in the 
+userservices, which is yet to be implementedm, passing the value of the key param. If the verification is successful thema response 200 OK status 
+is given and then a response body containing a massage that prompt user to enter a new password, the response body also incliude a user obnject.
+```java
+  @PostMapping("/verify/password")
+public ResponseEntity<Response> verifyResetPassword(@RequestParam("key") String key, HttpServletRequest request) {
+    var user =  userService.verifyPasswordKey(key);
+    return ResponseEntity.ok().body(getResponse(request, of("user", user), "Kindly enter a new password", OK));
+} 
+```
+So the next thing we want to work on is the implementantion of the `verifyPasswordKey` method.
+

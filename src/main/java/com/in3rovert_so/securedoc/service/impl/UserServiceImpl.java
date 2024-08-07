@@ -219,6 +219,11 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
+    public User verifyPasswordKey(String key) {
+        return null;
+    }
+
     private ConfirmationEntity getUserConfirmation(UserEntity user) {
         return confirmationRepository.findByUserEntity(user).orElse(null);
     }

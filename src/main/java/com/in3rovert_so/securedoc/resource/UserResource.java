@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.util.Map;
 
+import static com.google.common.collect.ImmutableMap.of;
 import static com.in3rovert_so.securedoc.utils.RequestUtils.getResponse;
 import static java.util.Collections.emptyMap;
 import static org.springframework.http.HttpStatus.CREATED;
@@ -74,6 +75,11 @@ This endpoints is going to all us to set up mfa, and user need to be logged in b
     public ResponseEntity<Response> resetPassword(@RequestBody @Valid EmailUserResetPasswordRequest emailRequest, HttpServletRequest request) {
         userService.resetPassword(emailRequest.getEmail());
         return ResponseEntity.ok().body(getResponse(request, emptyMap(), "Kindly check your email for the link to reset your password", OK));
+    }
+    @PostMapping("/verify/password")
+    public ResponseEntity<Response> verifyResetPassword(@RequestParam("key") String key, HttpServletRequest request) {
+       var user =  userService.verifyPasswordKey(key);
+        return ResponseEntity.ok().body(getResponse(request, of("user", user), "Kindly enter a new password", OK));
     }
 
 
