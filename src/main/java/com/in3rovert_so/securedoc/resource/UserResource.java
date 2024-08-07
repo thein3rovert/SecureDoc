@@ -4,6 +4,7 @@ import com.in3rovert_so.securedoc.domain.Response;
 import com.in3rovert_so.securedoc.dto.QrCodeRequest;
 import com.in3rovert_so.securedoc.dto.User;
 import com.in3rovert_so.securedoc.dtorequest.EmailUserResetPasswordRequest;
+import com.in3rovert_so.securedoc.dtorequest.ResetPasswordRequest;
 import com.in3rovert_so.securedoc.dtorequest.UserRequest;
 import com.in3rovert_so.securedoc.enumeration.TokenType;
 import com.in3rovert_so.securedoc.service.JwtService;
@@ -80,6 +81,12 @@ This endpoints is going to all us to set up mfa, and user need to be logged in b
     public ResponseEntity<Response> verifyResetPassword(@RequestParam("key") String key, HttpServletRequest request) {
        var user =  userService.verifyPasswordKey(key);
         return ResponseEntity.ok().body(getResponse(request, of("user", user), "Kindly enter a new password", OK));
+    }
+
+    @PostMapping("/resetpassword/reset")
+    public ResponseEntity<Response> activateResetPassword(@RequestBody @Valid ResetPasswordRequest resetPasswordRequest, HttpServletRequest request) {
+        userService.updatePassword(resetPasswordRequest.getUserId(), resetPasswordRequest.getNewPassword(), resetPasswordRequest.getConfirmNewPassword());
+        return ResponseEntity.ok().body(getResponse(request, emptyMap(), "User password reset successful", OK));
     }
 
 

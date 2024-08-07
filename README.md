@@ -2665,5 +2665,21 @@ So now what we have to do next is to allow users to change their password, for n
 enter a new password when verified but now we need them to be able to change their password, that is what we are goign to be working
 on next.
 
+# Activate user password reset
+We created a new endpoint to handle the request when a user enter their new password and tries to reset their password, this
+method handles a POST request to the endpoint, it takes in a `resetPasswordRequest` dto object as a request body, it then validates it and
+then use the `updatePassword` method to update the user's password. 
+Finally it return the status code 200 and then a response body containing a success message.
+
+```java
+  @PostMapping("/resetpassword/reset")
+    public ResponseEntity<Response> activateResetPassword(@RequestBody @Valid ResetPasswordRequest resetPasswordRequest, HttpServletRequest request) {
+        userService.updatePassword(resetPasswordRequest.getUserId(), resetPasswordRequest.getNewPassword(), resetPasswordRequest.getConfirmNewPassword());
+        return ResponseEntity.ok().body(getResponse(request, emptyMap(), "User password reset successful", OK));
+    }
+    ```
+so now we will work on the updatePassword method.
+
+## Implement updatePassword method
 
 

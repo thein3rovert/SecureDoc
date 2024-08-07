@@ -234,6 +234,11 @@ public class UserServiceImpl implements UserService {
         return fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
     }
 
+    @Override
+    public void updatePassword(String userId, String newPassword, String confirmNewPassword) {
+
+    }
+
     private ConfirmationEntity getUserConfirmation(UserEntity user) {
         return confirmationRepository.findByUserEntity(user).orElse(null);
     }
