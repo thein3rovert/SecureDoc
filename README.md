@@ -2677,9 +2677,27 @@ Finally it return the status code 200 and then a response body containing a succ
         userService.updatePassword(resetPasswordRequest.getUserId(), resetPasswordRequest.getNewPassword(), resetPasswordRequest.getConfirmNewPassword());
         return ResponseEntity.ok().body(getResponse(request, emptyMap(), "User password reset successful", OK));
     }
-    ```
+```
 so now we will work on the updatePassword method.
 
 ## Implement updatePassword method
-
-
+The method updatePassword takes in a userId, newPassword and confirm new password, the reason we have a userId is because the users
+are currently not logged in so in other to reset their password we need to have their id, so when the user enter a new password 
+and then enter the confirm new password, the method checks if both password matches
+```java
+   public void updatePassword(String userId, String newPassword, String confirmNewPassword) {
+        if(!confirmNewPassword.equals(newPassword)) {
+            throw new ApiException("Password don't match. Please try again");
+        }
+    //..................
+```
+if they dont it throws a new ApiException message saying password dont match and when they match it gets the user by user id then it set the new password to the credential and encode the password
+then it saves the credential to the databse.
+```java
+ var user = getUserByUserId(userId);
+        var credentials = getUserCredentialById(user.getId());
+        credentials.setPassword(encoder.encode(newPassword));
+        credentialR
+```
+![resetpasswordtest.png](src%2Fmain%2Fresources%2Fassets%2Fresetpasswordtest.png)
+![resetPasswordTest2.png](src%2Fmain%2Fresources%2Fassets%2FresetPasswordTest2.png)

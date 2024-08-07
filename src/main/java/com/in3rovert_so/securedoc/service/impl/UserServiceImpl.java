@@ -26,7 +26,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
-//import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -47,13 +47,13 @@ public class UserServiceImpl implements UserService {
     private final RoleRepository roleRepository;
     private final CredentialRepository credentialRepository;
     private final ConfirmationRepository confirmationRepository;
-    //private final BCryptPasswordEncoder encoder;
+    private final BCryptPasswordEncoder encoder;
     private final ApplicationEventPublisher publisher; //To public event when a user is created so that we can get an email.
     private final CacheStore<String, Integer> userCache;
     @Override
     public void createUser(String firstName, String lastName, String email, String password) {
         var userEntity = userRepository.save(createNewUser(firstName, lastName, email)); //Todo: Create the createNewUser helper method.
-        var credentialEntity = new CredentialEntity(userEntity, password);
+        var credentialEntity = new CredentialEntity(userEntity, encoder.encode(password)); //Instead of passing in the raw passwords is should be encoded
         System.out.println("User credential entity can be found here" + credentialEntity);
         credentialRepository.save(credentialEntity);
         var confirmationEntity = new ConfirmationEntity(userEntity);
@@ -236,7 +236,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void updatePassword(String userId, String newPassword, String confirmNewPassword) {
-
+        if(!confirmNewPassword.equals(newPassword)) {
+            throw new ApiException("Password don't match. Please try again");
+        }
+        var user = getUserByUserId(userId);
+        var credentials = getUserCredentialById(user.getId());
+        credentials.setPassword(encoder.encode(newPassword));
+        credentialRepository.save(credentials);
     }
 
     private ConfirmationEntity getUserConfirmation(UserEntity user) {

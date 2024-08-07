@@ -28,5 +28,5 @@ public interface UserService {
 
     User verifyPasswordKey(String key);
 
-    void updatePassword(String userId, String newPassword, String confirmNewPassword);
+    void updatePassword(String userId, String newPassword, String confirmNewPassword); //Because the user is not logged in we need to pass in the password
 }

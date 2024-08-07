@@ -70,7 +70,7 @@ This endpoints is going to all us to set up mfa, and user need to be logged in b
     }
     //TODO: Testing and Building a simple response: Deleted
 
-    // Reset password when user not logged in
+    // START - Reset password when user not logged in
     //Todo: Read and Research more on building and versioning api endpoints, make sure to refactor existing
     @PostMapping("/resetpassword")
     public ResponseEntity<Response> resetPassword(@RequestBody @Valid EmailUserResetPasswordRequest emailRequest, HttpServletRequest request) {
@@ -88,7 +88,7 @@ This endpoints is going to all us to set up mfa, and user need to be logged in b
         userService.updatePassword(resetPasswordRequest.getUserId(), resetPasswordRequest.getNewPassword(), resetPasswordRequest.getConfirmNewPassword());
         return ResponseEntity.ok().body(getResponse(request, emptyMap(), "User password reset successful", OK));
     }
-
+    // END - Reset password when user not logged in
 
     private URI getUri() {
         return URI.create("");
