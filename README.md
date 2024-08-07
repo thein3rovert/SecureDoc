@@ -2528,10 +2528,83 @@ versal.
     }
 ```
 Now we are ready to verfiy the QR code whenever we send a request to the verfyQrCode method endpoints, kso what we are going to do 
-now is test these all the method resposible for the MFA.
+now is test these all the methodhiy  resposible for the MFA.
+> Make sure to update this part with screenshots and steps if possible.
 
+# Testing
+Encounter an error when i tired to loginn the user, i entered the wrong password and tried to login the 
+user and it still gave the user and login in the user.
 
+- Need to fix issue with logining wrong user.
 
+Next i tested the email by entering the wronmg emial and that seems to work fine, no error so far, so i think the issue is just with the 
+credentials, so i need to debug where the issue comes from.
+![testingCredentials.png](src%2Fmain%2Fresources%2Fassets%2FtestingCredentials.png)
 
+My thought are the issue has something to do with the authenticate method, i purposely bypass a pevious issue
+i was having with the user credential by reversing the logic of the if condition that checks if the encoded password matches the 
+password from the database, if it matches the password then the user should be authenticated and if it doesnt match the password
+it should throw an api exception error." If i fix the issue that should resolve it.
+```java
+  if(!encoder.matches(apiAuthentication.getPassword(), userCredential.getPassword())) {
+                System.out.println("Password dont match" + apiAuthentication.getPassword() + " " + userCredential.getPassword());
+                return ApiAuthentication.authenticated(user, userPrincipal.getAuthorities());
+            } else throw new ApiException("Bad Credentials(Email and /or password incorrect. Please try again");
+        } throw new ApiException("Unable to authenticate user");
+```
+so until this error is solved, we cant test to bruteforce implementation we had, which is basically when a user enters the wrong 
+passoword for the 5th time, it should lock the account of the user. 
 
+For now we will move forward with the next usecaases which is the RESET PASSWORD, and then come back to that later.
 
+# RESET PASSWORD
+```markdown
+# Reset password
+1. The application should allow users to reset their password
+2. The application should send a link to the user 'email' to reset their password (link to be invalid after being click on).
+3. The application should present a screen with a form to reset the password when the linked is clicked. (FRONTEND)
+4. If the password has been reset successfully, user should be able to login using the new created password
+5. The application should allow user to reset their password anytime they want as manay time as possible.
+```
+All of this is when the user is not logged in, they can reset only when they are not logged in.
+So this is how the reset password method work, we are going to take in a request for the resetpasword
+
+```java
+ @PostMapping("/resetpassword")
+```
+This request is going to accept an email and the http request body and then we are going to pass this to the 
+resetpassword method then we return the response which will be the 200 OK response.
+```java
+    @PostMapping("/resetpassword")
+    public ResponseEntity<Response> resetPassword(@RequestBody @Valid EmailUserResetPasswordRequest emailRequest, HttpServletRequest request) {
+        userService.resetPassword(emailRequest.getEmail());
+        return ResponseEntity.ok().body(getResponse(request, emptyMap(), "Kindly check your email for the link to reset your password", OK));
+    }
+```
+So now we are going to be working on implementing the reset password method, the method resetPassword takes in a email, then get the userEntity associated with the 
+email, after it then try to get the confirmation for the user, if the user confirmation exist it then send the email to the user, if the user confirmation did not exist it 
+create a new confirmation for the user, then save the new one to the database and forward the email to the user. 
+```java
+    @Override
+    public void resetPassword(String email) {
+        //Lets get the user
+        var user = getUserEntityByEmail(email);
+        //Let get the user confirmation
+        var confirmation = getUserConfirmation(user);
+        if (confirmation != null) {
+            //Send existing confirmation
+            publisher.publishEvent(new UserEvent(user, RESETPASSWORD, Map.of("key", confirmation.getKey())));
+        } else {
+            // Create new confirmation, save and send
+            var confirmationEntity = new ConfirmationEntity(user);
+            System.out.println("Confirmation Entity for ResetPassword -------------: " + confirmationEntity);
+            confirmationRepository.save(confirmationEntity);
+            publisher.publishEvent(new UserEvent(user, RESETPASSWORD, Map.of("key", confirmationEntity.getKey())));
+        }
+    }
+```
+So after the implementamtion of this method we just tested  the endpoint and all is woking fine.
+![resetEmailTestingAPI.png](src%2Fmain%2Fresources%2Fassets%2FresetEmailTestingAPI.png)
+![emailtesting.png](src%2Fmain%2Fresources%2Fassets%2Femailtesting.png).
+
+So the next thing we want to work on is the actiavtion of the link send to the email so user can enter a new passoword

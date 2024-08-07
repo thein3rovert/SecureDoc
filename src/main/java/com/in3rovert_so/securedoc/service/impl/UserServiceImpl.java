@@ -32,6 +32,7 @@ import org.springframework.stereotype.Service;
 import java.util.Map;
 
 import static com.in3rovert_so.securedoc.enumeration.EventType.REGISTRATION;
+import static com.in3rovert_so.securedoc.enumeration.EventType.RESETPASSWORD;
 import static com.in3rovert_so.securedoc.utils.UserUtils.*;
 import static java.time.LocalDateTime.now;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
@@ -150,24 +151,29 @@ public class UserServiceImpl implements UserService {
     @Override
     public User verifyQrCode(String userId, String qrCode) {
         var userEntity = getUserEntityByUserId(userId);
+        System.out.println("UserId for verification purposes main -------------" + userEntity);
         verifyCode(qrCode, userEntity.getQrCodeSecret());
-        return fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId());
+        return fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
     }
     //Verify the codes
     private boolean verifyCode(String qrCode, String qrCodeSecret) {
         TimeProvider timeProvider = new SystemTimeProvider();
         CodeGenerator codeGenerator = new DefaultCodeGenerator();
         CodeVerifier codeVerifier = new DefaultCodeVerifier(codeGenerator, timeProvider);
+
+        System.out.println(qrCode + qrCodeSecret);
+
         if (codeVerifier.isValidCode(qrCodeSecret, qrCode)) {
             return true;
         } else {
-            throw new ApiException("Invalid QR code. Please try again")
+            throw new ApiException("Invalid QR code. Please try again");
         }
     }
 
     private UserEntity getUserEntityByUserId(String userId) {
         var userByUserId = userRepository.findUserByUserId(userId);
-        return userByUserId.orElseThrow(() -> new ApiException("User not found for qr verification"))
+        System.out.println("UserId for verificxation purposes" + userByUserId);
+        return userByUserId.orElseThrow(() -> new ApiException("User not found for qr verification"));
     }
 
     @Override
@@ -195,6 +201,28 @@ public class UserServiceImpl implements UserService {
     }
 
     //.......................
+    @Override
+    public void resetPassword(String email) {
+        //Lets get the user
+        var user = getUserEntityByEmail(email);
+        //Let get the user confirmation
+        var confirmation = getUserConfirmation(user);
+        if (confirmation != null) {
+            //Send existing confirmation
+            publisher.publishEvent(new UserEvent(user, RESETPASSWORD, Map.of("key", confirmation.getKey())));
+        } else {
+            // Create new confirmation, save and send
+            var confirmationEntity = new ConfirmationEntity(user);
+            System.out.println("Confirmation Entity for ResetPassword -------------: " + confirmationEntity);
+            confirmationRepository.save(confirmationEntity);
+            publisher.publishEvent(new UserEvent(user, RESETPASSWORD, Map.of("key", confirmationEntity.getKey())));
+        }
+    }
+
+    private ConfirmationEntity getUserConfirmation(UserEntity user) {
+        return confirmationRepository.findByUserEntity(user).orElse(null);
+    }
+
 
     //Creating helper method for the createNewUser method
     private UserEntity createNewUser(String firstName, String lastName, String email) {

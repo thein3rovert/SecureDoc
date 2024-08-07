@@ -23,4 +23,6 @@ public interface UserService {
     User setUpMfa(Long id);
 
     User verifyQrCode(String userId, String qrCode);
+
+    void resetPassword(String email);
 }

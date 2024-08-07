@@ -3,6 +3,7 @@ package com.in3rovert_so.securedoc.resource;
 import com.in3rovert_so.securedoc.domain.Response;
 import com.in3rovert_so.securedoc.dto.QrCodeRequest;
 import com.in3rovert_so.securedoc.dto.User;
+import com.in3rovert_so.securedoc.dtorequest.EmailUserResetPasswordRequest;
 import com.in3rovert_so.securedoc.dtorequest.UserRequest;
 import com.in3rovert_so.securedoc.enumeration.TokenType;
 import com.in3rovert_so.securedoc.service.JwtService;
@@ -30,8 +31,8 @@ public class UserResource {
     private final UserService userService;
 
     //Because we need to pass in the cookie in the response we need to call the JWT services
-    private final JwtService jwtservice
-    @PostMapping("/register")
+    private final JwtService jwtservice;
+   @PostMapping("/register")
     public ResponseEntity<Response> saveUser(@RequestBody @Valid UserRequest user, HttpServletRequest request) {
         userService.createUser(user.getFirstName(), user.getLastName(), user.getEmail(), user.getPassword());
 
@@ -65,7 +66,16 @@ This endpoints is going to all us to set up mfa, and user need to be logged in b
         userService.verifyAccountKey(key);
         return ResponseEntity.ok().body(getResponse(request, emptyMap(), "Account Verified. ", OK));
     }
-  // TODO: Testing and Building a simple response: Deleted
+    //TODO: Testing and Building a simple response: Deleted
+
+    // Reset password when user not logged in
+    //Todo: Read and Research more on building and versioning api endpoints, make sure to refactor existing
+    @PostMapping("/resetpassword")
+    public ResponseEntity<Response> resetPassword(@RequestBody @Valid EmailUserResetPasswordRequest emailRequest, HttpServletRequest request) {
+        userService.resetPassword(emailRequest.getEmail());
+        return ResponseEntity.ok().body(getResponse(request, emptyMap(), "Kindly check your email for the link to reset your password", OK));
+    }
+
 
     private URI getUri() {
         return URI.create("");
