@@ -96,6 +96,11 @@ This endpoints is going to all us to set up mfa, and user need to be logged in b
         var user = userService.getUserByUserId(userPrincipal.getUserId());
         return ResponseEntity.ok().body(getResponse(request, of("user", user), "User Profile Retrieved", OK));
     }
+    @PatchMapping("/update")
+    public ResponseEntity<Response> update(@AuthenticationPrincipal User userPrincipal, @RequestBody UserRequest userRequest, HttpServletRequest request) {
+        var user = userService.updateUser(userPrincipal.getUserId(), userRequest.getFirstName(), userRequest.getLastName(), userRequest.getEmail(), userRequest.getPhone(), userRequest.getBio());
+        return ResponseEntity.ok().body(getResponse(request, of("user", user), "User updated Successfully", OK));
+    }
 
     private URI getUri() {
         return URI.create("");

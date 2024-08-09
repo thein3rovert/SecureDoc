@@ -245,6 +245,18 @@ public class UserServiceImpl implements UserService {
         credentialRepository.save(credentials);
     }
 
+    @Override
+    public User updateUser(String userId, String firstName, String lastName, String email, String phone, String bio) {
+        var userEntity = getUserEntityByUserId(userId); // UserId is coming from the logged-in user
+        userEntity.setFirstName(firstName);
+        userEntity.setLastName(lastName);
+        userEntity.setEmail(email);
+        userEntity.setPhone(phone);
+        userEntity.setBio(bio);
+        userRepository.save(userEntity);
+        return fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
+    }
+
     private ConfirmationEntity getUserConfirmation(UserEntity user) {
         return confirmationRepository.findByUserEntity(user).orElse(null);
     }

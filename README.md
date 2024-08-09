@@ -2733,4 +2733,47 @@ profile has been retrived".
 So now we have a way to get the user, the other thing we have to do now, is that we have to allow them to update this 
 information so thats why we are going to be working on.
 
+# Update user Profile
+We created a endpoints called `update` this endpoint is responsible for updating neccessary user profile details, like the
+first name, last name, email, bio and phone number, this endpoint is annotated with the `@AuthenticationPrincipal` and 
+`@RequestBody` becuase the user has to be authenticated before they can update their profile and also because its a
+`PatchMapping` we need to get the user data from the UserRequest.
+Then we created a method `updateUser`, this method takes in a userId, and some data from the userRequest like the firstname, 
+lastname, email, bio and phone. Then return a responsebody of a user Object and a message.
+
+```java
+@PatchMapping("/update")
+    public ResponseEntity<Response> update(@AuthenticationPrincipal User userPrincipal, @RequestBody UserRequest userRequest, HttpServletRequest request) {
+        var user = userService.updateUser(userPrincipal.getUserId(), userRequest.getFirstName(), userRequest.getLastName(), userRequest.getEmail(), userRequest.getPassword(), userRequest.getBio());
+        return ResponseEntity.ok().body(getResponse(request, of("user", user), "User updated Successfully", OK));
+    }
+```
+So what we are going to be working on now is the `updateUser` method in the userServices. 
+### Update User impl
+In the method. the main thing we want to do is find the user and also update the user information. 
+The method takes in a userId (only when the user log in), firstname, lastname, email, phone and bio beause these are the
+things we want to be chaning in the application, then we get the user Entity with the userId of the user when logged in, after
+we set the data that needs to be updated, save it to the database and return a user object including the updated data.
+```java
+   @Override
+    public User updateUser(String userId, String firstName, String lastName, String email, String phone, String bio) {
+        var userEntity = getUserEntityByUserId(userId); // UserId is coming from the logged-in user
+        userEntity.setFirstName(firstName);
+        userEntity.setLastName(lastName);
+        userEntity.setEmail(email);
+        userEntity.setPhone(phone);
+        userEntity.setBio(bio);
+        userRepository.save(userEntity);
+        return fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
+    }
+```
+#### Testing update endpoints
+1. First login
+2. Hit the endpoints!
+> For testing purpose make sure to disable MFA
+![updateEndpointApi.png](src%2Fmain%2Fresources%2Fassets%2FupdateEndpointApi.png)
+
+So now user can chage the basic information on their profile, next we need to allow them to change the advance setting
+like their roles and setting on account.
+
 
