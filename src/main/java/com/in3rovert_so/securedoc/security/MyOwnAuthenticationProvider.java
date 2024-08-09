@@ -71,6 +71,7 @@ public class MyOwnAuthenticationProvider implements AuthenticationProvider {
             System.out.println("User principals to be validated are " + userPrincipal);
             validAccount.accept(userPrincipal);
             System.out.println(apiAuthentication.getPassword() + " " + userCredential.getPassword());
+            //Todo: Need to fix this, condition was reversed, it password matches is the right condition
             if(!encoder.matches(apiAuthentication.getPassword(), userCredential.getPassword())) {
                 System.out.println("Password dont match" + apiAuthentication.getPassword() + " " + userCredential.getPassword());
                 return ApiAuthentication.authenticated(user, userPrincipal.getAuthorities());

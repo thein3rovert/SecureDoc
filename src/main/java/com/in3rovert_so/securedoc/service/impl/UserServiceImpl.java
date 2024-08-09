@@ -76,7 +76,7 @@ public class UserServiceImpl implements UserService {
         var confirmationEntity = getUserConfirmation(key);
         System.out.println("The user confirmation key for verification is " + confirmationEntity);
         var userEntity = getUserEntityByEmail(confirmationEntity.getUserEntity().getEmail());
-        System.out.println("User account has just been verified" + userEntity);
+        System.out.println("User account to be verified" + userEntity);
         userEntity.setEnabled(true);
         userRepository.save(userEntity);
         System.out.println("User entibty to be saved to the database" + userEntity);
@@ -230,7 +230,7 @@ public class UserServiceImpl implements UserService {
         // If userEntity not found
         if (userEntity == null) { throw new ApiException("Incorrect token)key");}
         verifyAccountStatus(userEntity);
-        confirmationRepository.delete(confirmationEntity);
+        confirmationRepository.delete(confirmationEntity); //Optional but we don't want to many confirmation data for each user.
         return fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
     }
 

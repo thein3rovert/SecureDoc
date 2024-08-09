@@ -90,6 +90,13 @@ This endpoints is going to all us to set up mfa, and user need to be logged in b
     }
     // END - Reset password when user not logged in
 
+    //BEGIN USER PROFILE
+    @GetMapping("/profile")
+    public ResponseEntity<Response> profile(@AuthenticationPrincipal User userPrincipal, HttpServletRequest request) {
+        var user = userService.getUserByUserId(userPrincipal.getUserId());
+        return ResponseEntity.ok().body(getResponse(request, of("user", user), "User Profile Retrieved", OK));
+    }
+
     private URI getUri() {
         return URI.create("");
 

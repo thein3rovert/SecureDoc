@@ -2702,3 +2702,35 @@ then it saves the credential to the databse.
 ```
 ![resetpasswordtest.png](src%2Fmain%2Fresources%2Fassets%2Fresetpasswordtest.png)
 ![resetPasswordTest2.png](src%2Fmain%2Fresources%2Fassets%2FresetPasswordTest2.png)
+
+# User Profile Feature
+
+```markdown
+# Profile
+1. Application should allow users to update their basic profile
+2. Application should allow users to update their password while they are logged in
+3. Application should allow users to update their account settings while they are loffed in
+4. Application should allow users to update their profile while they are logged in
+```
+These are what we will be working on, we want to make sure we allow the user to see their information, as of now, we dont 
+have anyway to allow users to see their information or to show te show the profile of the user.
+
+We created an endpoint called profile, this endpoint is responsible for providing the neccessary user profile data basically,
+the userEntity, it has a method `profile` annotated with `AuthenticatedPrincipal` and takes in a UserPrincipal and Htttp
+Request.. The reason why we used the Authenticated Principle annotation is because this is an authenticated routes, user 
+has to be authenticated before they can be allowed to view their profile.
+
+Then we created get the userId from the userPrincipal and return a response body with a user object and a message "User
+profile has been retrived". 
+```java
+  @GetMapping("/profile")
+    public ResponseEntity<Response> profile(@AuthenticationPrincipal User userPrincipal, HttpServletRequest request) {
+        var user = userService.getUserByUserId(userPrincipal.getUserId());
+        return ResponseEntity.ok().body(getResponse(request, of("user", user), "User Profile Retrieved", OK));
+    }
+```
+![userProfileApi.png](src%2Fmain%2Fresources%2Fassets%2FuserProfileApi.png)
+So now we have a way to get the user, the other thing we have to do now, is that we have to allow them to update this 
+information so thats why we are going to be working on.
+
+
