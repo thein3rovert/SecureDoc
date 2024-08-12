@@ -2776,4 +2776,30 @@ we set the data that needs to be updated, save it to the database and return a u
 So now user can chage the basic information on their profile, next we need to allow them to change the advance setting
 like their roles and setting on account.
 
+# Update Advance User Settings ( ROLES AND ACCONT SETTINGS)
+So we created an endpoint called the updaterole, responsible for updating the user roles, similar to the update endpoint 
+it takes in the authenticated user, which mean if the user is not logged in or authenticated, the user cannot update,
+also takes in the role request and httpservlet request.
+Then we created a method called updateRole, which was the implemented in the user services, this method takes in the userID
+of the authenticated userRole.
+```java
+    void updateRole(String userId, String role);
+```
+We get the userEntity then we set the role to the user entity and save the userEntity to the database.
+```java
+   @Override
+    public void updateRole(String userId, String role) {
+        var userEntity = getUserEntityByUserId(userId);
+        userEntity.setRole(getRoleName(role));
+        userRepository.save(userEntity);}
+```
+![userRoleupdate.png](src%2Fmain%2Fresources%2Fassets%2FuserRoleupdate.png)
+![userroleUpdate2.png](src%2Fmain%2Fresources%2Fassets%2FuserroleUpdate2.png)
+
+So what we want to work on next is makig user able to update their settings like the `accountLocked`, `accountExpied`,
+`accoutEnable` and `CredentialExpired`.
+
+
+
+
 

@@ -5,6 +5,7 @@ import com.in3rovert_so.securedoc.dto.QrCodeRequest;
 import com.in3rovert_so.securedoc.dto.User;
 import com.in3rovert_so.securedoc.dtorequest.EmailUserResetPasswordRequest;
 import com.in3rovert_so.securedoc.dtorequest.ResetPasswordRequest;
+import com.in3rovert_so.securedoc.dtorequest.RoleRequest;
 import com.in3rovert_so.securedoc.dtorequest.UserRequest;
 import com.in3rovert_so.securedoc.enumeration.TokenType;
 import com.in3rovert_so.securedoc.service.JwtService;
@@ -100,6 +101,12 @@ This endpoints is going to all us to set up mfa, and user need to be logged in b
     public ResponseEntity<Response> update(@AuthenticationPrincipal User userPrincipal, @RequestBody UserRequest userRequest, HttpServletRequest request) {
         var user = userService.updateUser(userPrincipal.getUserId(), userRequest.getFirstName(), userRequest.getLastName(), userRequest.getEmail(), userRequest.getPhone(), userRequest.getBio());
         return ResponseEntity.ok().body(getResponse(request, of("user", user), "User updated Successfully", OK));
+    }
+    @PatchMapping("/updaterole")
+    public ResponseEntity<Response> updaterole(@AuthenticationPrincipal User userPrincipal, @RequestBody RoleRequest roleRequest, HttpServletRequest request) {
+        // In this case we are not returning a user, we are only updating the roles of the users
+        userService.updateRole(userPrincipal.getUserId(), roleRequest.getRole());
+        return ResponseEntity.ok().body(getResponse(request, emptyMap(), "User Role Updated Successfully", OK));
     }
 
     private URI getUri() {

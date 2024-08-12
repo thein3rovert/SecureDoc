@@ -31,4 +31,6 @@ public interface UserService {
     void updatePassword(String userId, String newPassword, String confirmNewPassword); //Because the user is not logged in we need to pass in the password
 
     User updateUser(String userId, String firstName, String lastName, String email, String phone, String bio);
+
+    void updateRole(String userId, String role);
 }

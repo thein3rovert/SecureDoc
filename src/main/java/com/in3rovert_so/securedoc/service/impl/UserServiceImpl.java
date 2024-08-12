@@ -257,6 +257,19 @@ public class UserServiceImpl implements UserService {
         return fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
     }
 
+    @Override
+    public void updateRole(String userId, String role) {
+        //We need the UserEntity
+        var userEntity = getUserEntityByUserId(userId);
+        System.out.println("User role to be updated" + userEntity);
+        //Update the role name
+        userEntity.setRole(getRoleName(role));
+        System.out.println("User role to be updated" + userEntity);
+        //Save role name to database
+        userRepository.save(userEntity);
+
+    }
+
     private ConfirmationEntity getUserConfirmation(UserEntity user) {
         return confirmationRepository.findByUserEntity(user).orElse(null);
     }
