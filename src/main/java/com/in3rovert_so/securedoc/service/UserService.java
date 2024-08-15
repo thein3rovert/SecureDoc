@@ -33,4 +33,12 @@ public interface UserService {
     User updateUser(String userId, String firstName, String lastName, String email, String phone, String bio);
 
     void updateRole(String userId, String role);
+
+    void toggleCredentialsExpired(String userId);
+
+    void toggleAccountExpired(String userId);
+
+    void toggleAccountEnabled(String userId);
+
+    void toggleAccountLocked(String userId);
 }

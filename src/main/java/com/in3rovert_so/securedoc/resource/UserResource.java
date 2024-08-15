@@ -108,6 +108,33 @@ This endpoints is going to all us to set up mfa, and user need to be logged in b
         userService.updateRole(userPrincipal.getUserId(), roleRequest.getRole());
         return ResponseEntity.ok().body(getResponse(request, emptyMap(), "User Role Updated Successfully", OK));
     }
+    // User Advance Setting Starts
+
+    @PatchMapping("/togglecredentialsexpired")
+    public ResponseEntity<Response> toggleCredentialsExpired(@AuthenticationPrincipal User user, HttpServletRequest request) {
+        userService.toggleCredentialsExpired(user.getUserId();
+        return ResponseEntity.ok().body(getResponse(request, emptyMap(), "User Credential Updated Successfully", OK));
+    }
+
+    @PatchMapping("/toggleaccountexpired")
+    public ResponseEntity<Response> toggleAccountExpired(@AuthenticationPrincipal User user, HttpServletRequest request) {
+        userService.toggleAccountExpired(user.getUserId();
+        return ResponseEntity.ok().body(getResponse(request, emptyMap(), "User Expiration Status Updated Successfully", OK));
+    }
+
+    @PatchMapping("/toggleaccountlocked")
+    public ResponseEntity<Response> toggleAccountLocked(@AuthenticationPrincipal User user, HttpServletRequest request) {
+        userService.toggleAccountLocked(user.getUserId();
+        return ResponseEntity.ok().body(getResponse(request, emptyMap(), "User locked Status  Updated Successfully", OK));
+    }
+
+    @PatchMapping("/toggleaccountenabled")
+    public ResponseEntity<Response> toggleAccountEnabled(@AuthenticationPrincipal User user, HttpServletRequest request) {
+        userService.toggleAccountEnabled(user.getUserId();
+        return ResponseEntity.ok().body(getResponse(request, emptyMap(), "User Enabled Status Updated Successfully", OK));
+    }
+
+    // User Advance Setting Ends
 
     private URI getUri() {
         return URI.create("");

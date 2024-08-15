@@ -29,8 +29,10 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 
+import static com.in3rovert_so.securedoc.constant.Constants.NINETY_DAYS;
 import static com.in3rovert_so.securedoc.enumeration.EventType.REGISTRATION;
 import static com.in3rovert_so.securedoc.enumeration.EventType.RESETPASSWORD;
 import static com.in3rovert_so.securedoc.utils.UserUtils.*;
@@ -266,6 +268,46 @@ public class UserServiceImpl implements UserService {
         userEntity.setRole(getRoleName(role));
         System.out.println("User role to be updated" + userEntity);
         //Save role name to database
+        userRepository.save(userEntity);
+
+    }
+
+    @Override
+    public void toggleCredentialsExpired(String userId) {
+        var userEntity = getUserEntityByUserId(userId)
+        var credentials = getUserCredentialById(userEntity.getId());
+        //credentials.setUpdatedAt(LocalDateTime.of(1995, 7, 12, 11, 11));
+        // A better approach
+        // If the credentials is over 90days
+        if(credentials.getUpdatedAt().plusDays(NINETY_DAYS).isAfter(now())) {
+            // Make the updated at to now
+            credentials.setUpdatedAt(now());
+        } else {
+            // Make it expire
+            credentials.setUpdatedAt(LocalDateTime.of(1995, 7, 12, 11, 11));
+        }
+        userRepository.save(userEntity);
+        //STOPPED HERE
+    }
+
+    @Override
+    public void toggleAccountExpired(String userId) {
+        var userEntity = getUserEntityByUserId(userId);
+        userEntity.setAccountNonExpired(!userEntity.isAccountNonExpired());
+        userRepository.save(userEntity);
+    }
+
+    @Override
+    public void toggleAccountEnabled(String userId) {
+        var userEntity = getUserEntityByUserId(userId);
+        userEntity.setEnabled(!userEntity.isEnabled());
+        userRepository.save(userEntity);
+    }
+
+    @Override
+    public void toggleAccountLocked(String userId) {
+        var userEntity = getUserEntityByUserId(userId);
+        userEntity.setAccountNonLocked(!userEntity.isAccountNonLocked());
         userRepository.save(userEntity);
 
     }

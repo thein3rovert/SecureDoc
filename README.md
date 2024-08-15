@@ -2797,9 +2797,20 @@ We get the userEntity then we set the role to the user entity and save the userE
 ![userroleUpdate2.png](src%2Fmain%2Fresources%2Fassets%2FuserroleUpdate2.png)
 
 So what we want to work on next is makig user able to update their settings like the `accountLocked`, `accountExpied`,
-`accoutEnable` and `CredentialExpired`.
-
-
+`accountEnable` and `CredentialExpired`.
+So we created two endpoints for each of them: 
+1. toggleCredentialsExpired: This endpoints takes in the authenticated User and Http request, it has a toggleCredentialsExpired
+method that takes in a UserId, this method is responsible for making user account expire, in case the admin or manager want to
+make a user account expire it can be toggled on and off. The toggleCredentialsExpired created a userEnitty and also a credentialEntity, 
+if then checks if the credentials of the user is more than 90 days, if it is more than 90 days it updates the credentials 
+and if its not not more than 90 days it set the user credentials to more than 90 days, which means  the user account is 
+expired.
+2. toggleAccountEnabled: This method also takes in a userId as param, then it created a userEntity set the user account 
+enable to false, if the user is enabled and viseversal. Then save the userEntity to the database
+3. toggleAccountExpired: Thus method takes in a userId as param, it then creates a userEntity by usging the getUserByUserId 
+method to get the userEntity by Id. Then it set the accountNonExpired to false and vise versal after it saved the userEntity 
+to the database.
+4. toggleAccountLocked : Similar process for the toggleAccountLocked method. 
 
 
 
