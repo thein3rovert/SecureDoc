@@ -2776,7 +2776,7 @@ we set the data that needs to be updated, save it to the database and return a u
 So now user can chage the basic information on their profile, next we need to allow them to change the advance setting
 like their roles and setting on account.
 
-# Update Advance User Settings ( ROLES AND ACCONT SETTINGS)
+# Update Advance User Settings ( ROLES AND ACCOUNT SETTINGS)
 So we created an endpoint called the updaterole, responsible for updating the user roles, similar to the update endpoint 
 it takes in the authenticated user, which mean if the user is not logged in or authenticated, the user cannot update,
 also takes in the role request and httpservlet request.
@@ -2811,6 +2811,46 @@ enable to false, if the user is enabled and viseversal. Then save the userEntity
 method to get the userEntity by Id. Then it set the accountNonExpired to false and vise versal after it saved the userEntity 
 to the database.
 4. toggleAccountLocked : Similar process for the toggleAccountLocked method. 
+
+# User logged in passsword update. 
+
+So the next thing we want to do is an implementation that is going yo allow the user to update their password, 
+when they are logged in.
+
+We created a new endpoint called the updatePassword, this method takes in a the Authenticated User, becuase the user has to be 
+logged in before they can make an atmpt to chage their password in the settings, then it also takes in a `@RequesBody` 
+`updateUserPasswordRequest` this request has the password(currentPassword, newPassword and confirmNewPasssword). Then we created
+a new helper method in the userServices called the updatePassword, this method updatePassword is similar to the `updatePassword`
+method used for when not logged in user what to reset their password. However this latest update password, takes in different
+parameters from the not logged in update password.
+
+So the `updatePassword` method first checks if the `confirnNewPassword` is similar to the newPassword, it is not similar 
+it throw an api exception error with a message. 
+
+```java
+if (!confirmNewPassword.equals(newPassword)) { throw new ApiException("New currentPassword don't match"); }
+```
+Then we get a new `userEntity` by passing in the `UserId` of the user requesting to update their password, then we verify 
+the user with the `verifyAccountStatus` method to check if the user is allowed to make an update on their account.
+If true, then we get the user credentials by passing in the userId, gotten from the userEnity and then, this gives us the
+user current password which we then compare with the newPassword provided by the user, if the `currentPassword` provided
+by the user is not equal to the password from the database(which belongs to the user) then we throw an api exception,
+if otherwise we then endcode the newPasword save it to the database replacing the old password.
+```java
+var user = getUserEntityByUserId(userId); 
+verifyAccountStatus(user);
+        var credentials = getUserCredentialById(user.getId());
+        if (!encoder.matches(currentPassword, credentials.getPassword())) { throw new ApiException(" Existing currentPassword is incorrect, Kindly try again"); }
+        credentials.setPassword(encoder.encode(newPassword));
+        credentialRepository.save(credentials);
+```
+Then we run test on the endpoint and it went well.
+
+> For more details on this please check my blog -> [Link]
+
+Future give user the functionality to update their user image and also the funtionality to logout
+
+
 
 
 

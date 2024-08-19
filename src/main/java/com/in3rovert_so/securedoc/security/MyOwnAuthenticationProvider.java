@@ -72,10 +72,10 @@ public class MyOwnAuthenticationProvider implements AuthenticationProvider {
             validAccount.accept(userPrincipal);
             System.out.println(apiAuthentication.getPassword() + " " + userCredential.getPassword());
             //Todo: Need to fix this, condition was reversed, it password matches is the right condition
-            if(!encoder.matches(apiAuthentication.getPassword(), userCredential.getPassword())) {
+            if(encoder.matches(apiAuthentication.getPassword(), userCredential.getPassword())) {
                 System.out.println("Password dont match" + apiAuthentication.getPassword() + " " + userCredential.getPassword());
                 return ApiAuthentication.authenticated(user, userPrincipal.getAuthorities());
-            } else throw new ApiException("Bad Credentials(Email and /or password incorrect. Please try again");
+            } else throw new ApiException("Bad Credentials Email and /or password incorrect. Please try again");
         } throw new ApiException("Unable to authenticate user");
     }
 

@@ -176,7 +176,7 @@ public class UserServiceImpl implements UserService {
     private UserEntity getUserEntityByUserId(String userId) {
         var userByUserId = userRepository.findUserByUserId(userId);
         System.out.println("UserId for verificxation purposes" + userByUserId);
-        return userByUserId.orElseThrow(() -> new ApiException("User not found for qr verification"));
+        return userByUserId.orElseThrow(() -> new ApiException("User not found"));
     }
 
     @Override
@@ -248,6 +248,19 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public void updatePassword(String userId, String currentPassword, String newPassword, String confirmNewPassword) {
+        if (!confirmNewPassword.equals(newPassword)) { throw new ApiException("New currentPassword don't match"); }
+        var user = getUserEntityByUserId(userId);
+        // Verify if the user is allowed to update their account
+        verifyAccountStatus(user);
+        var credentials = getUserCredentialById(user.getId());
+        // Check if the current password from db matches the currentPassword in the request/provided
+        if (!encoder.matches(currentPassword, credentials.getPassword())) { throw new ApiException(" Existing currentPassword is incorrect, Kindly try again"); }
+        credentials.setPassword(encoder.encode(newPassword));
+        credentialRepository.save(credentials);
+    }
+
+    @Override
     public User updateUser(String userId, String firstName, String lastName, String email, String phone, String bio) {
         var userEntity = getUserEntityByUserId(userId); // UserId is coming from the logged-in user
         userEntity.setFirstName(firstName);
@@ -274,7 +287,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void toggleCredentialsExpired(String userId) {
-        var userEntity = getUserEntityByUserId(userId)
+        var userEntity = getUserEntityByUserId(userId);
         var credentials = getUserCredentialById(userEntity.getId());
         //credentials.setUpdatedAt(LocalDateTime.of(1995, 7, 12, 11, 11));
         // A better approach

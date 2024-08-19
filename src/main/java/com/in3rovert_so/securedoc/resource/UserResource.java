@@ -3,10 +3,7 @@ package com.in3rovert_so.securedoc.resource;
 import com.in3rovert_so.securedoc.domain.Response;
 import com.in3rovert_so.securedoc.dto.QrCodeRequest;
 import com.in3rovert_so.securedoc.dto.User;
-import com.in3rovert_so.securedoc.dtorequest.EmailUserResetPasswordRequest;
-import com.in3rovert_so.securedoc.dtorequest.ResetPasswordRequest;
-import com.in3rovert_so.securedoc.dtorequest.RoleRequest;
-import com.in3rovert_so.securedoc.dtorequest.UserRequest;
+import com.in3rovert_so.securedoc.dtorequest.*;
 import com.in3rovert_so.securedoc.enumeration.TokenType;
 import com.in3rovert_so.securedoc.service.JwtService;
 import com.in3rovert_so.securedoc.service.UserService;
@@ -71,7 +68,14 @@ This endpoints is going to all us to set up mfa, and user need to be logged in b
     }
     //TODO: Testing and Building a simple response: Deleted
 
-    // START - Reset password when user not logged in
+    // Update user when they are logged in - STARTS
+    @PatchMapping("/updatePassword")
+    public ResponseEntity<Response> updatePassword(@AuthenticationPrincipal User user, @RequestBody updateUserPasswordRequest passwordRequest, HttpServletRequest request) {
+        userService.updatePassword(user.getUserId(), passwordRequest.getPassword(), passwordRequest.getNewPassword(), passwordRequest.getConfirmNewPassword());
+        return ResponseEntity.ok().body(getResponse(request, emptyMap(), "User Password Updated Successfully", OK));
+    }
+
+    // START - Reset password when user not logged in0
     //Todo: Read and Research more on building and versioning api endpoints, make sure to refactor existing
     @PostMapping("/resetpassword")
     public ResponseEntity<Response> resetPassword(@RequestBody @Valid EmailUserResetPasswordRequest emailRequest, HttpServletRequest request) {
@@ -109,28 +113,27 @@ This endpoints is going to all us to set up mfa, and user need to be logged in b
         return ResponseEntity.ok().body(getResponse(request, emptyMap(), "User Role Updated Successfully", OK));
     }
     // User Advance Setting Starts
-
     @PatchMapping("/togglecredentialsexpired")
     public ResponseEntity<Response> toggleCredentialsExpired(@AuthenticationPrincipal User user, HttpServletRequest request) {
-        userService.toggleCredentialsExpired(user.getUserId();
+        userService.toggleCredentialsExpired(user.getUserId());
         return ResponseEntity.ok().body(getResponse(request, emptyMap(), "User Credential Updated Successfully", OK));
     }
 
     @PatchMapping("/toggleaccountexpired")
     public ResponseEntity<Response> toggleAccountExpired(@AuthenticationPrincipal User user, HttpServletRequest request) {
-        userService.toggleAccountExpired(user.getUserId();
+        userService.toggleAccountExpired(user.getUserId());
         return ResponseEntity.ok().body(getResponse(request, emptyMap(), "User Expiration Status Updated Successfully", OK));
     }
 
     @PatchMapping("/toggleaccountlocked")
     public ResponseEntity<Response> toggleAccountLocked(@AuthenticationPrincipal User user, HttpServletRequest request) {
-        userService.toggleAccountLocked(user.getUserId();
+        userService.toggleAccountLocked(user.getUserId());
         return ResponseEntity.ok().body(getResponse(request, emptyMap(), "User locked Status  Updated Successfully", OK));
     }
 
     @PatchMapping("/toggleaccountenabled")
     public ResponseEntity<Response> toggleAccountEnabled(@AuthenticationPrincipal User user, HttpServletRequest request) {
-        userService.toggleAccountEnabled(user.getUserId();
+        userService.toggleAccountEnabled(user.getUserId());
         return ResponseEntity.ok().body(getResponse(request, emptyMap(), "User Enabled Status Updated Successfully", OK));
     }
 
