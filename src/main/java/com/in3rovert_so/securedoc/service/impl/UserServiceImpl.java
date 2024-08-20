@@ -28,15 +28,21 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.function.BiFunction;
 
 import static com.in3rovert_so.securedoc.constant.Constants.NINETY_DAYS;
 import static com.in3rovert_so.securedoc.enumeration.EventType.REGISTRATION;
 import static com.in3rovert_so.securedoc.enumeration.EventType.RESETPASSWORD;
 import static com.in3rovert_so.securedoc.utils.UserUtils.*;
 import static com.in3rovert_so.securedoc.validation.UserValidation.verifyAccountStatus;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.time.LocalDateTime.now;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
@@ -324,6 +330,40 @@ public class UserServiceImpl implements UserService {
         userRepository.save(userEntity);
 
     }
+
+    @Override
+    public String uploadPhoto(String userId, MultipartFile file) {
+        //Get the user entity
+        var user = getUserEntityByUserId(userId);
+        //Create helper method
+        var photoUrl = photoFunction.apply(userId, file);
+        /* Make sure the url is diff everytime its updated so the will not refetch the image
+        The reason we want to change the url everytime is because
+        we want the browser to fetch the image everytime the sources attribute is different
+         */
+        user.setImageUrl(photoUrl + "?timestamp=" + System.currentTimeMillis());
+        userRepository.save(user);
+        return photoUrl;
+    }
+
+    private final BiFunction<String, MultipartFile, String> photoFunction = (id, file) -> {
+        /*
+        Going to use the string UUID which is the userId of the user can also
+        use a random generated string or UUID as the image url of the user.
+         */
+        var filename = id + ".png";
+        try{
+            var fileStorageLocation = Paths.get(System.getProperty("user.home") + "/Downloads/uploads").toAbsolutePath().normalize();
+            if(!Files.exists(fileStorageLocation)) {
+                Files.createDirectories(fileStorageLocation); }
+            Files.copy(file.getInputStream(), fileStorageLocation.resolve(filename), REPLACE_EXISTING);
+            return ServletUriComponentsBuilder
+                    .fromCurrentContextPath()
+                    .path("/user/image/" + filename).toUriString();
+        }catch (Exception exception) {
+            throw new ApiException("Unable to save image");
+        }
+    };
 
     private ConfirmationEntity getUserConfirmation(UserEntity user) {
         return confirmationRepository.findByUserEntity(user).orElse(null);

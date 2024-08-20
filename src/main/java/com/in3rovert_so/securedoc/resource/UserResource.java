@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URI;
 import java.util.Map;
@@ -138,6 +139,13 @@ This endpoints is going to all us to set up mfa, and user need to be logged in b
     }
 
     // User Advance Setting Ends
+
+    @PatchMapping("/photo")
+    public ResponseEntity<Response> uploadPhoto(@AuthenticationPrincipal User user, @RequestParam("file") MultipartFile file, HttpServletRequest request) {
+        // In this case we are not returning a user, we are only updating the roles of the users
+        var imageUrl = userService.uploadPhoto(user.getUserId(), file);
+        return ResponseEntity.ok().body(getResponse(request, of("imageUrl", imageUrl), "Profile Photo Update Successfully", OK));
+    }
 
     private URI getUri() {
         return URI.create("");

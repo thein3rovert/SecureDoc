@@ -2848,8 +2848,74 @@ Then we run test on the endpoint and it went well.
 
 > For more details on this please check my blog -> [Link]
 
-Future give user the functionality to update their user image and also the funtionality to logout
+## Updating User Profile
+What we first did was create an enpoint called `/photo` this endpoint is responsible for handling the user photo upload,
+and it uses a PatchMapping annotation. Then we created the method uploadPhoto responsible for handling Patch request to the /photo endpoints.
+The endpoint is a protected route so the method takes in a an authenticated user, so the user has to be logged in before 
+that can change their profile so the method takes in an Authenticated `User`, MultipartFile which is the file the user 
+is uploading and HttpServletRequest.
 
+Then we created an upload photo method in the userservice this method is responsible for uploading the photo, it takes in
+a userId and a file. 
+```java
+    @PatchMapping("/photo")
+    public ResponseEntity<Response> uploadPhoto(@AuthenticationPrincipal User user, @RequestParam("file") MultipartFile file, HttpServletRequest request) {
+        // In this case we are not returning a user, we are only updating the roles of the users
+        var imageUrl = userService.uploadPhoto(user.getUserId(), file);
+```
+Then it returns a responseEnity OK and a body containining the imageUrl and a success message.
+```java
+...
+        return ResponseEntity.ok().body(getResponse(request, of("imageUrl", imageUrl), "Profile Photo Update Successfully", OK));
+}
+```
+The uploadPhoto Method takes in a userId and a MultipartFile file, then we creates a userEntity and a photoFunction method. 
+Then we set the imageUrl passing in the photoUrl and append a timestamp to the photoUrl to ensure that the url is different
+everytime the image is updated, this is done so that when the browser featch the image everytime the sources attribute will
+be different and then save the user object to the database and return thr photoUrl.
+```java
+    @Override
+    public String uploadPhoto(String userId, MultipartFile file) {
+        //Get the user entity
+        var user = getUserEntityByUserId(userId);
+        //Create helper method
+        var photoUrl = photoFunction.apply(userId, file);
+        /* Make sure the url is diff everytime its updated so the will not refetch the image
+        The reason we want to change the url everytime is because
+        we want the browser to fetch the image everytime the sources attribute is different
+         */
+        user.setImageUrl(photoUrl + "?timestamp=" + System.currentTimeMillis());
+        userRepository.save(user);
+        return photoUrl;
+    }
+```
+The photoFunction called by the uploadPhoto method takes in two param, a string Id and a MultipartFile file. 
+The Function create a filename with the `uuid` and a concat "png" 
+```java
+ private final BiFunction<String, MultipartFile, String> photoFunction = (id, file) -> {
+        var filename = id + "png";
+```
+Then we create a file Storage location in the user's home diretory in the Downloads folder, it create a new folder 
+called uploads, if the in happends that the directory does not exist it will create a new one and then copy the content 
+of the file which will be an image to a specific location. 
+Finally it creaTED a URI String using the current context path and the filename and rhen return it. If an error occurs 
+during the process, it thows an ApiException message "Unable to find Image".
+
+```java
+ try{
+            var fileStorageLocation = Paths.get(System.getProperty("user.home") + "/Downloads/uploads").toAbsolutePath().normalize();
+            if(!Files.exists(fileStorageLocation)) {
+                Files.createDirectories(fileStorageLocation); }
+            Files.copy(file.getInputStream(), fileStorageLocation.resolve(filename), REPLACE_EXISTING);
+            return ServletUriComponentsBuilder
+                    .fromCurrentContextPath()
+                    .path("/user/image/" + filename).toUriString();
+        }catch (Exception exception) {
+            throw new ApiException("Unable to save image");
+        }
+    };
+```
+New we need to create a get request so that we can see the image when the imageUrl is clicked.
 
 
 

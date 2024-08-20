@@ -4,6 +4,7 @@ import com.in3rovert_so.securedoc.dto.User;
 import com.in3rovert_so.securedoc.entity.CredentialEntity;
 import com.in3rovert_so.securedoc.entity.RoleEntity;
 import com.in3rovert_so.securedoc.enumeration.LoginType;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface UserService {
     void createUser(String firstName, String lastName, String email, String password);
@@ -42,4 +43,5 @@ public interface UserService {
     void toggleAccountEnabled(String userId);
 
     void toggleAccountLocked(String userId);
+    String uploadPhoto(String userId, MultipartFile file);
 }
