@@ -1,6 +1,7 @@
 package com.in3rovert_so.securedoc.service.impl;
 
 import com.in3rovert_so.securedoc.cache.CacheStore;
+import com.in3rovert_so.securedoc.constant.Constants;
 import com.in3rovert_so.securedoc.domain.RequestContext;
 import com.in3rovert_so.securedoc.dto.User;
 import com.in3rovert_so.securedoc.entity.ConfirmationEntity;
@@ -38,6 +39,7 @@ import java.util.Map;
 import java.util.function.BiFunction;
 
 import static com.in3rovert_so.securedoc.constant.Constants.NINETY_DAYS;
+import static com.in3rovert_so.securedoc.constant.Constants.PHOTO_DIR;
 import static com.in3rovert_so.securedoc.enumeration.EventType.REGISTRATION;
 import static com.in3rovert_so.securedoc.enumeration.EventType.RESETPASSWORD;
 import static com.in3rovert_so.securedoc.utils.UserUtils.*;
@@ -353,7 +355,8 @@ public class UserServiceImpl implements UserService {
          */
         var filename = id + ".png";
         try{
-            var fileStorageLocation = Paths.get(System.getProperty("user.home") + "/Downloads/uploads").toAbsolutePath().normalize();
+           // var fileStorageLocation = Paths.get(System.getProperty("user.home") + "/Downloads/uploads").toAbsolutePath().normalize();
+            var fileStorageLocation = Paths.get(PHOTO_DIR).toAbsolutePath().normalize();
             if(!Files.exists(fileStorageLocation)) {
                 Files.createDirectories(fileStorageLocation); }
             Files.copy(file.getInputStream(), fileStorageLocation.resolve(filename), REPLACE_EXISTING);

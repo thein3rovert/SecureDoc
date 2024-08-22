@@ -225,9 +225,13 @@ public class JwtServiceImpl extends JwtConfiguration implements JwtService {
     @Override
     public void removeCookie(HttpServletRequest request, HttpServletResponse response, String cookieName) {
         var optionalCookie  = extractCookie.apply(request, cookieName); //In case we have no cookie.
+        // If we have a cookie
         if(optionalCookie.isPresent()) {
+            //Get the cookie
             var cookie = optionalCookie.get();
+            // Expire the cookie by setting the max age to 0
             cookie.setMaxAge(0);
+            // Return the cookie to the response
             response.addCookie(cookie);
         }
     }

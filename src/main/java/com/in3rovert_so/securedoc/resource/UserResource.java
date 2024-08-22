@@ -5,6 +5,7 @@ import com.in3rovert_so.securedoc.dto.QrCodeRequest;
 import com.in3rovert_so.securedoc.dto.User;
 import com.in3rovert_so.securedoc.dtorequest.*;
 import com.in3rovert_so.securedoc.enumeration.TokenType;
+import com.in3rovert_so.securedoc.handler.ApiLogoutHandler;
 import com.in3rovert_so.securedoc.service.JwtService;
 import com.in3rovert_so.securedoc.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,6 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -36,9 +38,10 @@ import static org.springframework.http.MediaType.IMAGE_PNG_VALUE;
 @RequestMapping(path = {"/user"})
 public class UserResource {
     private final UserService userService;
-
-    //Because we need to pass in the cookie in the response we need to call the JWT services
+    // For passing cookie to the Response
     private final JwtService jwtservice;
+    private final ApiLogoutHandler logoutHandler;
+
    @PostMapping("/register")
     public ResponseEntity<Response> saveUser(@RequestBody @Valid UserRequest user, HttpServletRequest request) {
         userService.createUser(user.getFirstName(), user.getLastName(), user.getEmail(), user.getPassword());
@@ -155,6 +158,14 @@ This endpoints is going to all us to set up mfa, and user need to be logged in b
     @GetMapping(path = "/image/{filename}", produces = { IMAGE_PNG_VALUE, IMAGE_JPEG_VALUE})
     public byte[] getPhoto(@PathVariable("filename") String filename) throws IOException {
         return Files.readAllBytes(Paths.get(PHOTO_DIR + filename));
+    }
+
+    // Cant test this is postman, we test when we create the frontend
+    @PostMapping("/logout")
+    public ResponseEntity<Response> logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
+        //User user = (User) authentication.getPrincipal(); //This is what an @AuthenticationPrincipal is doing
+        logoutHandler.logout(request, response, authentication);
+        return ResponseEntity.ok().body(getResponse(request, emptyMap(), "You've logged out successfully", OK));
     }
 
     private URI getUri() {

@@ -2918,5 +2918,27 @@ during the process, it thows an ApiException message "Unable to find Image".
 New we need to create a get request so that we can see the image when the imageUrl is clicked.
 So the next thing we have next is to implement the lgout functionality.
 
+## Logout
+So for the logout feature, we created a logout endpoint, it had a method `logout` that handler the logout request, this method
+takes in the Httpservelet Request, response and Authentication, the reason why we use authentication and not the 
+authenticated principal is because we need some other things in the authentication, AuthenticationPrincipal and Authentication 
+are kind of the samething, the authentication is what we have as the authenticate entity for the request in the current thread.
+After we created a ApiLogoutHandler class in the handler package and inject it into the field, this `ApilogoutHandle` handles
+the logout, it has a method called logout that takes in the request,response and Authentication, then create a logoutHandler
+object using the SecurityContextLogoutHandler. Then passes in the response,request and authentication.
+```java
+  @Override
+    public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
+        //SecurityContextLogoutHandler logoutHandler = new SecurityContextLogoutHandler();
+        var logoutHandler = new SecurityContextLogoutHandler();
+    logoutHandler.logout(request, response, authentication);
+```
+Then we uses the JwtServices.removeCookie method to remove the cookies from the request.
+```java
+      // We need to remove the cookie
+        jwtService.removeCookie(request, response, ACCESS.getValue());
+        jwtService.removeCookie(request, response, REFRESH.getValue());
+```
+
 
 
