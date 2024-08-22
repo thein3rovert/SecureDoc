@@ -2916,7 +2916,7 @@ during the process, it thows an ApiException message "Unable to find Image".
     };
 ```
 New we need to create a get request so that we can see the image when the imageUrl is clicked.
-
+So the next thing we have next is to implement the lgout functionality.
 
 
 

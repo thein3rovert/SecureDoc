@@ -16,14 +16,20 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Map;
 
 import static com.google.common.collect.ImmutableMap.of;
+import static com.in3rovert_so.securedoc.constant.Constants.PHOTO_DIR;
 import static com.in3rovert_so.securedoc.utils.RequestUtils.getResponse;
 import static java.util.Collections.emptyMap;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.MediaType.IMAGE_JPEG_VALUE;
+import static org.springframework.http.MediaType.IMAGE_PNG_VALUE;
 
 @RestController
 @RequiredArgsConstructor
@@ -145,6 +151,10 @@ This endpoints is going to all us to set up mfa, and user need to be logged in b
         // In this case we are not returning a user, we are only updating the roles of the users
         var imageUrl = userService.uploadPhoto(user.getUserId(), file);
         return ResponseEntity.ok().body(getResponse(request, of("imageUrl", imageUrl), "Profile Photo Update Successfully", OK));
+    }
+    @GetMapping(path = "/image/{filename}", produces = { IMAGE_PNG_VALUE, IMAGE_JPEG_VALUE})
+    public byte[] getPhoto(@PathVariable("filename") String filename) throws IOException {
+        return Files.readAllBytes(Paths.get(PHOTO_DIR + filename));
     }
 
     private URI getUri() {
