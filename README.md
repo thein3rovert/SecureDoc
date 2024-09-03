@@ -3143,6 +3143,23 @@ Both Update and Getting Documents by Id are returning an Object of Documents(IDo
 So what we are going to work on next is implementing these methods in the DocumentServicsImpl class what we are going to
 be creating next.
 
+## Document Services Implementation
+So we created a new class called the `DocumentServiceImpl` this class will contains the implementation of the document 
+interface class so the fist thing we did was implement all the methods and then worked on the `getDocuments` method.
+
+
+This method takes in a page and a size as param, then we return a page of document contains `page`, `size` and and also sort 
+the documents by `name`.
+```java
+    @Override
+    public Page<IDocument> getDocuments(int page, int size) {
+        return documentRepository.findDocument(PageRequest.of(page, size, Sort.by("name")));
+    }
+```
+Now that we have a way to get the document we need to find a way to saveDocument because we dont have any document in our
+database so we cant get any yet. Thats what we will be working on next.
+
+
 
 
 
