@@ -3159,6 +3159,18 @@ the documents by `name`.
 Now that we have a way to get the document we need to find a way to saveDocument because we dont have any document in our
 database so we cant get any yet. Thats what we will be working on next.
 
+## Document Service Implementationm 2 (Save Document)
+
+### Document DTO creation.
+
+First we created a Document class in the DTO package, this is going to represrent the document class that we are sending 
+to the frontend we cannot use the IDocument because that is for interacting with the database. It's basically the representation 
+of the document we are going to be working with on the client side.
+
+So now we will be working on saving the document metadata in the database and also save the document in the server, so that
+what we are going to be working on next.
+
+
 
 
 

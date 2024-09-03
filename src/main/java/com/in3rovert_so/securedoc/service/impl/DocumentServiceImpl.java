@@ -1,5 +1,6 @@
 package com.in3rovert_so.securedoc.service.impl;
 
+import com.in3rovert_so.securedoc.dto.Document;
 import com.in3rovert_so.securedoc.dto.api.IDocument;
 import com.in3rovert_so.securedoc.repository.DocumentRepository;
 import com.in3rovert_so.securedoc.service.DocumentService;
@@ -31,7 +32,7 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     @Override
-    public Collection<IDocument> saveDocuments(String userId, List<MultipartFile> documents) {
+    public Collection<Document> saveDocuments(String userId, List<MultipartFile> documents) {
         return null;
     }
 
