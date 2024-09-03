@@ -2940,5 +2940,55 @@ Then we uses the JwtServices.removeCookie method to remove the cookies from the 
         jwtService.removeCookie(request, response, REFRESH.getValue());
 ```
 
+## Document Management (List and Details).
+### Document Entity
+
+So the first thing we did was check the schema for the document entity and made sure that its in the corrent form, before
+we move on to creating the entity for the document using the schema as a refernce, because this helps avoid making mistake, as 
+JPA will the managing the entity for us and we want to make sure that the name are in the right other so we wont have any 
+issue going forward or JPA wont have issue finding the data we need.
+
+Then we created a new class called the DocumentEntity, this class has the following fields and are related to the schema
+created for the docuemnt entity.
+```java
+public class DocumentEntity extends  Auditable {
+    @Column(updatable = false, unique = true, nullable = false) // We cannot have a user without an id
+    private String documentId;
+    private String name;
+    private String description;
+    private String uri;
+    private Long size;
+    private String formattedSize; // Human-readable representation of size.
+    private String icon;
+    private String extension;
+```
+As you can see we also extend Auditable for the docuemnt entity this is because we need to know which docuemnt belongs to
+which user., so we need the `id` of the user entity. 
+We also make use of the following annotations, which are pretty similar to the other entity classes.
+```java
+@Getter
+@Setter
+@ToString
+@Builder //Need to know what this is for
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
+@Table(name = "documents") //Naming the table
+@JsonInclude(NON_DEFAULT)
+```
+After that we then created a private field of the usewr entity, this field serves as the owner of the document, so every 
+document it associaoted with the owner.
+So we map the docuemnt with the annotation `@ManyToOne` this means that many document could belong to more users and also 
+the `@JoinColumn` annotation where we created a new column in the DocumentEntity called the user_id this could then 
+reference the column named `id` in the User Table and its also a foreignKey in the document table. 
+So basically, the `id` in the user table will be the `user_Id`(owner) in the document table.
+
+So the next thing we are going to work on next is create a repository so that we can interact with the document entity 
+and the database.
+
+# Document Repository.
+
+
+
 
 

@@ -48,10 +48,8 @@ public class UserResource {
 
         return ResponseEntity.created(getUri()).body(getResponse(request, emptyMap(), "Account created. Check your email to enable your account", CREATED));
     }
-
     /*Todo: setupMfa endpoints
-This endpoints is going to all us to set up mfa, and user need to be logged in before they could so this.
- */
+     */
     @PatchMapping("/mfa/setup")
     public ResponseEntity<Response> setupMfa(@AuthenticationPrincipal User userPrincipal, HttpServletRequest request) {
         var user = userService.setUpMfa(userPrincipal.getId()); //Set up mfa for each specific id
