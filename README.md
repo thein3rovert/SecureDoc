@@ -3118,6 +3118,30 @@ the `_`. For example let say we want the `getDocument_id`, we are going the get 
 
 So what we want to do next is create the controller and then create the services. 
 
+## Document Services
+
+We created a new interface class called the `DocumentService` this interface contains all the method for the docuemnt entities,
+like the `getDocuments`, `saveDocuments`, basically all the CRUD Operations for the Documents.
+```java
+    Page<IDocument> getDocuments(int page, int size); // For getting the document
+    Page<IDocument> getDocuments(int page, int size, String name); // For searching the document.
+    Collection<IDocument>saveDocuments(String userId, List<MultipartFile> documents); // For all the document we want to save.
+    // Returning a document object
+    IDocument updateDocument(String documentId, String name, String description);
+    IDocument getDocumentByDocumentId(String documentId);
+    void deleteDocument(String documentId);
+    Resource getResource(String documentName);
+```
+- The getDocuments (1) is returing a page of documents, while the getDocuments (2) is for searching for documents by name.
+- SaveDocument is for saving a list of document we want to save
+- UpdateDocument is for updating any documents
+- GetDocumentsByDocumentId is for getting specific documents by their Id.
+Both Update and Getting Documents by Id are returning an Object of Documents(IDocuments).
+- deleteDocument for deleting documents
+- getResources is for getting any documents by the name of the documents.
+
+So what we are going to work on next is implementing these methods in the DocumentServicsImpl class what we are going to
+be creating next.
 
 
 
