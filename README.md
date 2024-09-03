@@ -2988,6 +2988,58 @@ and the database.
 
 # Document Repository.
 
+In these repository we are going to be working with sql and Jpa at the same time becuase we are going to be returning a 
+page of document. JPA has pagination that we can use but we dont want to re-create the wheel.
+
+So we are passing in the `@Query` annotation because we do not want to just get the document, we want to get the docuemnt owner..and some 
+other data related to the document and also other table like the user table, because we need to get the user name and some
+some other things so that will also require us to do a join table of the document and the user table.
+```java
+    @Query(countQuery = "SELECT COUNT(*)FROM documents", value = "", nativeQuery = true)
+    Page<DocumentEntity> findDocument(Pageable pageable);
+```
+So with this query what we are basically sayng is, i need to get a page but i need to wrote my own query for what i want 
+this page to contain.
+If you every want to get pages of data so that you can still use the pageable api, then you need to add the count query 
+in your @Query annotation becuase JPA needs that information to do the paging.
+
+So the next thing we did was create the query mto fetch the document information that will be returned in the pageable api,
+we want to get the owner information alongside the document data, for us to do that we have to concat the owner `firstName` 
+and `lastName` and also concat the person that updated the document which will be the updater. 
+
+For the owner and the updated we simply used the ownerId which is the createdBy of the document and for the updater we use the updatedBy of the document.
+Here is the query used - 
+```postgresql
+SELECT	doc.id,
+		doc.document_id,
+		doc.name,
+		doc.description,
+		doc.uri,
+		doc.icon,
+		doc.size,
+		doc.formatted_size,
+		doc.extension,
+		doc.reference_id,
+		doc.created_at,
+		doc.updated_at,
+		CONCAT(owner.first_name, ' ', owner.last_name) AS owner_name,
+		owner.email AS owner_email,
+		owner.phone AS owner_phone,
+		owner.last_login AS owner_last_login,
+		CONCAT(updater.first_name, ' ', updater.last_name) AS updater_name
+		FROM documents doc
+		JOIN users owner ON owner.id = doc.created_by
+		JOIN users updater ON updater.id = doc.updated_by
+```
+The information we are going to get when we run these query is not going to match the document entity we have
+```java
+ Page<DocumentEntity> findDocument(Pageable pageable);
+```
+These is because we dont have all the owner name, owner.email and owner.phone number also the updater so what we need to
+do and what we will do now is create a different class to represent the data this query is going to return, so thats what
+we will be working on next.
+
+
 
 
 
