@@ -2986,7 +2986,9 @@ So basically, the `id` in the user table will be the `user_Id`(owner) in the doc
 So the next thing we are going to work on next is create a repository so that we can interact with the document entity 
 and the database.
 
-# Document Repository.
+# Document Repository. 
+
+### Working with both SQL and JPA
 
 In these repository we are going to be working with sql and Jpa at the same time becuase we are going to be returning a 
 page of document. JPA has pagination that we can use but we dont want to re-create the wheel.
@@ -3039,6 +3041,82 @@ These is because we dont have all the owner name, owner.email and owner.phone nu
 do and what we will do now is create a different class to represent the data this query is going to return, so thats what
 we will be working on next.
 
+# Repository 2
+So we created a new package in the DTO packages called `api` and inside this `api` package we created a new interface class,
+called the `IDocument` this class is responsible for the representing the data that that Query in the Document Repository
+class is going to return.
+If we dont have this class as an interface this @Query is not going to work and it also has to be struture in a specific 
+way.
+
+So what we need to do is give a setter and a setter for every column we have in the document table so every data that exist
+in this interface need to have a getter and a setter. 
+By doing it these way, JPA is going to do the mapping for us and also give us the pageable and thats how we are going to 
+be working with both sql and JPA at the same time.
+```java
+public interface IDocument {
+
+    Long getId();
+    void setId(Long id);
+    String getDocument_Id();
+    void setDocument_Id(String documentId);
+    String getName();
+    void setName(String name);
+    String getDescription();
+    void setDescription(String description);
+    String getUri();
+    void setUri(String uri);
+    String getIcon();
+    void setIcon(String icon);
+    long getSize();
+    void setSize(long size);
+    @JsonProperty("formattedSize")
+    String getFormatted_Size();
+    void setFormatted_Size(String formattedSize);
+    String getExtension();
+    void setExtension(String extension);
+    @JsonProperty("referenceId")
+    String getReference_Id();
+    void setReference_Id(String referenceId);
+    @JsonProperty("createdAt")
+    LocalDateTime getCreated_At();
+    void setCreated_At(LocalDateTime createdAt);
+    @JsonProperty("updatedAt")
+    LocalDateTime getUpdated_At();
+    void setUpdated_At(LocalDateTime updatedAt);
+    @JsonProperty("ownerName")
+    String getOwner_Name();
+    void setOwner_Name(String ownerName);
+    @JsonProperty("ownerEmail")
+    String getOwner_Email();
+    void setOwner_Email(String ownerEmail);
+    @JsonProperty("ownerPhone")
+    String getOwner_Phone();
+    void setOwner_Phone(String ownerPhone);
+    @JsonProperty("ownerLastLogin")
+    String getOwner_Last_Login();
+    void setOwner_Last_Login(String ownerLastLogin);
+    @JsonProperty("updaterName")
+    String getUpdater_Name();
+    void setUpdater_Name(String updaterName);
+}
+```
+
+This fomat is a very sensitive format that i have to following so that spring JPA can do the mapping for us and also the
+pagination at the same tim, that way we dont get away from using the pagination that is very good in JPA and at the same 
+time our query so that we can effecrively query our database.
+
+So this way we are still using pageable which is very good by the way and at the same time, we can write own own query to 
+return what ever we want in the page of data so instead of using the Document Entity we just pass in the IDocument.
+```java
+  @Query(countQuery = SELECT_COUNT_DOCUMENT_QUERY, value = SELECT_DOCUMENT_QUERY, nativeQuery = true)
+    Page<IDocument> findDocument(Pageable pageable);
+```
+The reason we used the @JsonProperty annotation is becuase whenever we are desrilising it and we dont want it to give us
+the `_`. For example let say we want the `getDocument_id`, we are going the get the same `getDocument_ID` format instead of the 
+`documentId` format so by using `JsonProperty` we get just the `docuementId`. So we basically use the JsonProperty to reformat it.
+
+
+So what we want to do next is create the controller and then create the services. 
 
 
 
