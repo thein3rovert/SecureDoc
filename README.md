@@ -3248,6 +3248,38 @@ public class DocumentUtils {
 ```
 Then we build the document.
 
-
+### Saving Document
+In additon to the `saveDocument` method after building the document we then save the document to the database using the 
+`documentRepository`. This only save the document to the database but we also want to save this document to the  file system
+in our provided path.
+```java
+var savedDocument = documentRepository.save(documentEntity);
+Files.copy(document.getInputStream(), storage.resolve(filename), REPLACE_EXISTING);
+```
+After we then generate newDocument using the `fromDocumentEntity` method, this was created in the userUtils, this method 
+takes in the `documentEntity`, `User` which is the used is created and updated the document as parameter.
+In the `fromDocumentEntity` we created a new each time we call it. Then we copy the properrties of the documentEntity into
+the newly created document, this save us the time of having to created each properties. After that we then created the properties
+that doesnt exist in the documentEntities like the `Owner` -> name,email,phone_number, lastLogin, updaterName.
+After creating the document and adding the properties we then return the documents.
+```java
+public class DocumentUtils {
+    public static Document fromDocumentEntity(DocumentEntity documentEntity, User createdBy, User updatedBy) {
+        var document = new Document();
+        // Copy all the document properties from documentEntity into the document.
+        BeanUtils.copyProperties(documentEntity, document);
+        document.setOwnerName(createdBy.getFirstName() + " " + createdBy.getLastName());
+        document.setOwnerEmail(createdBy.getEmail());
+        document.setOwnerPhone(createdBy.getPhone());
+        document.setOwnerLastLogin(createdBy.getLastLogin());
+        document.setUpdaterName(createdBy.getFirstName() + " " + createdBy.getLastName());
+        return document;
+    }
+```
+Finally we added this newly created `document` to the document `arraylist` created in the `savedDocument` method.
+```java
+    Document newDocument = fromDocumentEntity(savedDocument, userService.getUserById(savedDocument.getCreatedBy()), userService.getUserById(savedDocument.getUpdatedBy()));
+        newDocuments.add(newDocument);
+```
 
 

@@ -7,6 +7,7 @@ import com.in3rovert_so.securedoc.exception.ApiException;
 import com.in3rovert_so.securedoc.repository.DocumentRepository;
 import com.in3rovert_so.securedoc.repository.UserRepository;
 import com.in3rovert_so.securedoc.service.DocumentService;
+import com.in3rovert_so.securedoc.service.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
@@ -16,12 +17,13 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 
 import static com.in3rovert_so.securedoc.constant.Constants.FILE_STORAGE;
-import static com.in3rovert_so.securedoc.utils.DocumentUtils.getDocumentUri;
-import static com.in3rovert_so.securedoc.utils.DocumentUtils.setIcon;
+import static com.in3rovert_so.securedoc.utils.DocumentUtils.*;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static org.apache.commons.io.FileUtils.byteCountToDisplaySize;
 import static org.apache.commons.io.FilenameUtils.getExtension;
 import static org.springframework.util.StringUtils.cleanPath;
@@ -32,6 +34,7 @@ import static org.springframework.util.StringUtils.cleanPath;
 public class DocumentServiceImpl implements DocumentService {
     private final DocumentRepository documentRepository;
     private final UserRepository userRepository;
+    private final UserService userService;
 
     @Override
     public Page<IDocument> getDocuments(int page, int size) {
@@ -65,8 +68,17 @@ public class DocumentServiceImpl implements DocumentService {
                             .formattedSize(byteCountToDisplaySize(document.getSize()))
                             .icon(setIcon((getExtension(filename))))
                             .build();
+                var savedDocument = documentRepository.save(documentEntity);
+                // Lets save the physical file on the computer.
+                Files.copy(document.getInputStream(), storage.resolve(filename), REPLACE_EXISTING);
+                // Lets generate a document
+                Document newDocument = fromDocumentEntity(savedDocument, userService.getUserById(savedDocument.getCreatedBy()), userService.getUserById(savedDocument.getUpdatedBy()));
+                newDocuments.add(newDocument);
             }
-        }catch (Exception exception) {}
+            return newDocuments;
+        }catch (Exception exception) {
+            throw new ApiException("Unable to save documents.");
+        }
         return null;
     }
 

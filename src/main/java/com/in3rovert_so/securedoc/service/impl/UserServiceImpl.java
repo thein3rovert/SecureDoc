@@ -348,6 +348,12 @@ public class UserServiceImpl implements UserService {
         return photoUrl;
     }
 
+    @Override
+    public User getUserById(Long Id) {
+        var userEntity = userRepository.findById(Id).orElseThrow(() -> new ApiException("User not Found"));
+        return fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
+    }
+
     private final BiFunction<String, MultipartFile, String> photoFunction = (id, file) -> {
         /*
         Going to use the string UUID which is the userId of the user can also

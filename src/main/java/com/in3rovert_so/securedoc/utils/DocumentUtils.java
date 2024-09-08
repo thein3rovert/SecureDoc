@@ -1,10 +1,26 @@
 package com.in3rovert_so.securedoc.utils;
 
+import com.in3rovert_so.securedoc.dto.Document;
+import com.in3rovert_so.securedoc.dto.User;
+import com.in3rovert_so.securedoc.entity.DocumentEntity;
 import org.apache.catalina.util.StringUtil;
+import org.springframework.beans.BeanUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 public class DocumentUtils {
+    public static Document fromDocumentEntity(DocumentEntity documentEntity, User createdBy, User updatedBy) {
+        var document = new Document();
+        // Copy all the document properties from documentEntity into the document.
+        BeanUtils.copyProperties(documentEntity, document);
+        document.setOwnerName(createdBy.getFirstName() + " " + createdBy.getLastName());
+        document.setOwnerEmail(createdBy.getEmail());
+        document.setOwnerPhone(createdBy.getPhone());
+        document.setOwnerLastLogin(createdBy.getLastLogin());
+        document.setUpdaterName(createdBy.getFirstName() + " " + createdBy.getLastName());
+        return document;
+    }
+
     public static String getDocumentUri(String filename) {
         return ServletUriComponentsBuilder.fromCurrentContextPath().path(String.format("/documents/%s", filename)).toUriString();
     }
