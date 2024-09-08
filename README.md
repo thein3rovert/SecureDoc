@@ -3281,5 +3281,19 @@ Finally we added this newly created `document` to the document `arraylist` creat
     Document newDocument = fromDocumentEntity(savedDocument, userService.getUserById(savedDocument.getCreatedBy()), userService.getUserById(savedDocument.getUpdatedBy()));
         newDocuments.add(newDocument);
 ```
+### Document Resource
+First we created a new class called `DocumentResources` this class is responsible for crated the endpoint for the document. 
+We created a endpoint called `/upload` this endpoint has a method called the `saveDocuments` responsible for saving newly 
+created document to the database. This method takes in the `authenticated_user`, `multipartFiles` documents and 
+`httpservletrequest` as param. Then it uses the saveDocument method from the `documentService` to save the document passing in 
+the `userId` and the `documents`. After it then returns body of created passing in the request, map of new document and 
+a message.
+```java
+    @PostMapping("/upload")
+    public ResponseEntity<Response> saveDocuments(@AuthenticationPrincipal User user, @RequestParam("files") List<MultipartFile> documents, HttpServletRequest request) {
+        var newDocuments = documentService.saveDocuments(user.getUserId(), documents);
+        return ResponseEntity.created(URI.create("")).body(getResponse(request, Map.of("documents", newDocuments), "Document's uploaded",CREATED));
+    }
+```
 
 

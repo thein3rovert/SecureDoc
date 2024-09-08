@@ -46,7 +46,7 @@ public class UserResource {
     public ResponseEntity<Response> saveUser(@RequestBody @Valid UserRequest user, HttpServletRequest request) {
         userService.createUser(user.getFirstName(), user.getLastName(), user.getEmail(), user.getPassword());
 
-        return ResponseEntity.created(getUri()).body(getResponse(request, emptyMap(), "Account created. Check your email to enable your account", CREATED));
+        return ResponseEntity.created(URI.create("")).body(getResponse(request, emptyMap(), "Account created. Check your email to enable your account", CREATED));
     }
     /*Todo: setupMfa endpoints
      */
@@ -166,8 +166,8 @@ public class UserResource {
         return ResponseEntity.ok().body(getResponse(request, emptyMap(), "You've logged out successfully", OK));
     }
 
-    private URI getUri() {
+/*    private URI getUri() {
         return URI.create("");
 
-    }
+    }*/
 }
