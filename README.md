@@ -3170,7 +3170,83 @@ of the document we are going to be working with on the client side.
 So now we will be working on saving the document metadata in the database and also save the document in the server, so that
 what we are going to be working on next.
 
+### Creating document metadata
 
+In the `saveDocument` method we first created a list of new documents(ArrayList), then we created a new userEntity because
+we need the userEntity of the user trying to save to a document entity.
+```java
+  public Collection<Document> saveDocuments(String userId, List<MultipartFile> documents) {
+        List<Document> newDocuments = new ArrayList<>();
+    var userEntity = userRepository.findUserByUserId(userId).get();
+    var storage = Paths.get(FILE_STORAGE).toAbsolutePath().normalize();
+```
+
+Then we also created a new file-storage this serves as the absolutePath for the document storage.
+```java
+try {
+            // For every document in thr documents
+            for(MultipartFile document : documents) {
+                var filename = cleanPath(Objects.requireNonNull(document.getOriginalFilename()));
+                if("..".contains(filename)) {
+                    throw new ApiException(String.format(("Invalid file name: %s", filename)));
+                    var documentEntity = DocumentEntity
+                            .builder()
+                            .documentId(UUID.randomUUID().toString())
+                            .name(filename)
+                            .owner(userEntity)
+                            .extension(getExtension(filename))
+                            .uri(getDocumentUri(filename))
+                            .formattedSize(byteCountToDisplaySize(document.getSize()))
+                            .icon(setIcon((getExtension(filename))))
+                            .build();
+                }
+            }
+        }catch (Exception exception) {}
+        return null;
+    }
+```
+After that we create a try and catch, inside this try and catch we loop through each document in the documents, get the 
+original file name of the document and also check if the document filename contains the special character `..`.
+If it does we throw new api exc*e*ption `Invalid file name` and if it does we then created the documentEntity.
+
+The documentEntity was created using the builder annotation, in the object we added the follwowing@
+- documentId - this is a UUID generated randomly
+- filename - document filename
+- owner - this is the userEntity of the created documents.
+- extensions - this is the original extension of the document.
+- uri - for the uri we created a new method called the `getDocumentUri` this was created in the util package, this method
+takes in a filename as param and then return a string of URI, this methid uses a `servletUriComponentsBuilder` to build the 
+URI string.
+```java
+public class DocumentUtils {
+  public static String getDocumentUri(String filename) {
+    return ServletUriComponentsBuilder.fromCurrentContextPath().path(String.format("/documents/%s", filename)).toUriString();
+}
+```
+- formattedSize - this is file size of the document formatted into string.
+- icons - we created a method called `setIcons` in the documentUtil, this method takes in a fileExtensions, it uses 
+`stringUtils` to `trimAllWhiteSpace` from the fileExtension.
+Then it check if the fileExtension contains some common document file extensions like "DOC, DOCX, XSL, XLSX AND PDF" for each 
+extension an icon is returned and then if the extension does not contain any of the mentions extension we set in a default
+icon which is the DOC icon.
+```java
+public class DocumentUtils {
+     public static String setIcon(String fileExtension) {
+    String extension = StringUtils.trimAllWhitespace(fileExtension);
+    if(extension.equalsIgnoreCase("DOC") || extension.equalsIgnoreCase("DOCX")) {
+        return "https://htmlstream.com/preview/front-dashboard-v2.1.1/assets/svg/brands/word-icon.svg";
+    }
+    if(extension.equalsIgnoreCase("XLS") || extension.equalsIgnoreCase("XLSX")) {
+        return "https://htmlstream.com/preview/front-dashboard-v2.1.1/assets/svg/brands/excel-icon.svg"
+    }
+    if(extension.equalsIgnoreCase("PDF")) {
+        return "https://htmlstream.com/preview/front-dashboard-v2.1.1/assets/svg/brands/pdf-icon.svg"
+    } else {
+        return "https://htmlstream.com/preview/front-dashboard-v2.1.1/assets/svg/brands/word-icon.svg";
+    }
+}
+```
+Then we build the document.
 
 
 

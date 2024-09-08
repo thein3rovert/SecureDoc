@@ -9,7 +9,7 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_DEFAULT;
 @Getter
 @Setter
 @ToString
-@Builder //Need to know what this is for
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
