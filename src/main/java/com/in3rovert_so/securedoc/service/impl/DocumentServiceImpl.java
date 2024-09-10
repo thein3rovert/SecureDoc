@@ -56,8 +56,9 @@ public class DocumentServiceImpl implements DocumentService {
             // For every document in thr documents
             for(MultipartFile document : documents) {
                 var filename = cleanPath(Objects.requireNonNull(document.getOriginalFilename()));
+                System.out.print(filename);
                 if("..".contains(filename)) {
-                    throw new ApiException(String.format(("Invalid file name: %s", filename)));}
+                    throw new ApiException(String.format("Invalid file name: %s", filename));}
                     var documentEntity = DocumentEntity
                             .builder()
                             .documentId(UUID.randomUUID().toString())
@@ -65,21 +66,25 @@ public class DocumentServiceImpl implements DocumentService {
                             .owner(userEntity)
                             .extension(getExtension(filename))
                             .uri(getDocumentUri(filename))
+                            .size(document.getSize())
                             .formattedSize(byteCountToDisplaySize(document.getSize()))
                             .icon(setIcon((getExtension(filename))))
                             .build();
+                System.out.print(documentEntity);
                 var savedDocument = documentRepository.save(documentEntity);
+                System.out.println("Document to be saved " + savedDocument);
                 // Lets save the physical file on the computer.
                 Files.copy(document.getInputStream(), storage.resolve(filename), REPLACE_EXISTING);
                 // Lets generate a document
                 Document newDocument = fromDocumentEntity(savedDocument, userService.getUserById(savedDocument.getCreatedBy()), userService.getUserById(savedDocument.getUpdatedBy()));
+                System.out.print("Document to be added: " + newDocument);
                 newDocuments.add(newDocument);
+                System.out.println(newDocument);
             }
             return newDocuments;
         }catch (Exception exception) {
             throw new ApiException("Unable to save documents.");
         }
-        return null;
     }
 
     @Override

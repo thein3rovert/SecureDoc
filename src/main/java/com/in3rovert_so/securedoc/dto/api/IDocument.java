@@ -3,6 +3,7 @@ package com.in3rovert_so.securedoc.dto.api;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.cglib.core.Local;
 
 import java.time.LocalDateTime;
 
@@ -55,7 +56,7 @@ public interface IDocument {
     String getOwner_Phone();
     void setOwner_Phone(String ownerPhone);
     @JsonProperty("ownerLastLogin")
-    String getOwner_Last_Login();
+    LocalDateTime getOwner_Last_Login();
     void setOwner_Last_Login(String ownerLastLogin);
     @JsonProperty("updaterName")
     String getUpdater_Name();

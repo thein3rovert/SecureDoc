@@ -45,5 +45,5 @@ public interface UserService {
     void toggleAccountLocked(String userId);
     String uploadPhoto(String userId, MultipartFile file);
 
-    User getUserById(Long Id);
+    User getUserById(Long id);
 }

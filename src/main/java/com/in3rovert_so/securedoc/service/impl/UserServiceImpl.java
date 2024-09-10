@@ -349,8 +349,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User getUserById(Long Id) {
-        var userEntity = userRepository.findById(Id).orElseThrow(() -> new ApiException("User not Found"));
+    public User getUserById(Long id) {
+        var userEntity = userRepository.findById(id).orElseThrow(() -> new ApiException("User not Found"));
+        System.out.println("User for document debug " + userEntity);
         return fromUserEntity(userEntity, userEntity.getRole(), getUserCredentialById(userEntity.getId()));
     }
 

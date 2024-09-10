@@ -21,7 +21,7 @@ public class DocumentEntity extends  Auditable {
     private String name;
     private String description;
     private String uri;
-    private Long size;
+    private long size;
     private String formattedSize; // Human-readable representation of size.
     private String icon;
     private String extension;
@@ -30,7 +30,7 @@ public class DocumentEntity extends  Auditable {
     @JoinColumn(
             name = "user_id",
             referencedColumnName = "id", // Let's make the id a foreign key
-            foreignKey = @ForeignKey(name = "fk_document_owner", foreignKeyDefinition = "foreign key /* FK */ (user_id) references the UserEntity", value = ConstraintMode.CONSTRAINT);
+            foreignKey = @ForeignKey(name = "fk_documents_owner", foreignKeyDefinition = "foreign key /* FK */ (user_id) references UserEntity", value = ConstraintMode.CONSTRAINT)
     )
     private UserEntity owner;
 

@@ -18,7 +18,6 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_DEFAULT;
 @Entity
 @Table(name = "users") //Naming the table
 @JsonInclude(NON_DEFAULT)
-
 public class UserEntity extends Auditable {
     //Enforce for the userID to be Unique
     @Column(updatable = false, unique = true, nullable = false) // We cannot have a user without an id

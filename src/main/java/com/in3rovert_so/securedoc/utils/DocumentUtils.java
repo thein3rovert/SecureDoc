@@ -17,7 +17,8 @@ public class DocumentUtils {
         document.setOwnerEmail(createdBy.getEmail());
         document.setOwnerPhone(createdBy.getPhone());
         document.setOwnerLastLogin(createdBy.getLastLogin());
-        document.setUpdaterName(createdBy.getFirstName() + " " + createdBy.getLastName());
+        document.setUpdaterName(updatedBy.getFirstName() + " " + updatedBy.getLastName());
+        System.out.println("Document details from from-documentEntity: " + document);
         return document;
     }
 
@@ -31,10 +32,10 @@ public class DocumentUtils {
             return "https://htmlstream.com/preview/front-dashboard-v2.1.1/assets/svg/brands/word-icon.svg";
         }
         if(extension.equalsIgnoreCase("XLS") || extension.equalsIgnoreCase("XLSX")) {
-            return "https://htmlstream.com/preview/front-dashboard-v2.1.1/assets/svg/brands/excel-icon.svg"
+            return "https://htmlstream.com/preview/front-dashboard-v2.1.1/assets/svg/brands/excel-icon.svg";
         }
         if(extension.equalsIgnoreCase("PDF")) {
-            return "https://htmlstream.com/preview/front-dashboard-v2.1.1/assets/svg/brands/pdf-icon.svg"
+            return "https://htmlstream.com/preview/front-dashboard-v2.1.1/assets/svg/brands/pdf-icon.svg";
         } else {
             return "https://htmlstream.com/preview/front-dashboard-v2.1.1/assets/svg/brands/word-icon.svg";
         }
