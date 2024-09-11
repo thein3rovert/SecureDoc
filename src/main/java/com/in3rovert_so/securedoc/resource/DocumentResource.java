@@ -48,6 +48,12 @@ public class DocumentResource {
         return ResponseEntity.ok().body(getResponse(request, Map.of("documents", documents), "Document's Retrieved", OK));
     }
 
+    @GetMapping("/{documentId}")
+    public ResponseEntity<Response> getDocument(@AuthenticationPrincipal User user, @PathVariable("documentId") String documentId, HttpServletRequest request){
+        var document = documentService.getDocumentByDocumentId(documentId);
+        return ResponseEntity.ok().body(getResponse(request, Map.of("document", document), "Document's Retrieved", OK));
+    }
+
 
 
 

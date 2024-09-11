@@ -95,7 +95,7 @@ public class DocumentServiceImpl implements DocumentService {
 
     @Override
     public IDocument getDocumentByDocumentId(String documentId) {
-        return null;
+        return documentRepository.findDocumentByDocumentId(documentId).orElseThrow(() -> new ApiException("Document not found"));
     }
 
     @Override

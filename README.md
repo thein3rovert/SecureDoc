@@ -3363,3 +3363,28 @@ the findDocumentByName method in the documentRepository.
 ```
 So the next thing we are going to do is created a way to find/search document by Id.
 
+### Search document by documentId
+First we created a getmapping endpoint called "/{documentId}", this endpoint has a method called the getDocument, responsible 
+for getting/retriving only one document based on the id that belongs to the document.
+
+The method takes in the @Authenticated User, @PathVarible documentId and an HttpServlet Request, then the method get the 
+document using the `getDocumentByDocumentId` method in the userServices, this method takes in `documentId`.
+After we return an response Body ok, document objects and a message.
+```java
+   @GetMapping("/{documentId}")
+    public ResponseEntity<Response> getDocument(@AuthenticationPrincipal User user, @PathVariable("documentId") String documentId, HttpServletRequest request){
+        var document = documentService.getDocumentByDocumentId(documentId);
+        return ResponseEntity.ok().body(getResponse(request, Map.of("document", document), "Document's Retrieved", OK));
+    }
+```
+The `getDocumentByDocumentId` method in the user servics takes in the `documentId`, then return an object of the 
+document based on the given id, if the document cannot be found it throws an Api Exception error "Document not found".
+```java
+  public IDocument getDocumentByDocumentId(String documentId) {
+        return documentRepository.findDocumentByDocumentId(documentId).orElseThrow(() -> new ApiException("Document not found"));
+    }
+```
+
+So the next thing we are going to do now is make sure we can update the document.
+
+
