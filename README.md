@@ -3295,5 +3295,43 @@ a message.
         return ResponseEntity.created(URI.create("")).body(getResponse(request, Map.of("documents", newDocuments), "Document's uploaded",CREATED));
     }
 ```
+The next thing we have to do is, we need to be able to fetch all the document, now that we have define the `postmapping` which
+we use to create the document, we need a `getmapping` to get all the documentr we need.
+### Document Resources (Fetching all the document)
+First we define created a new endpoint with the methed getDocument, this endpoint is pointing to the "/documents" with 
+is the default entrypoint, this takes in @Authenticated User, HttpServlet Request and then a @RequestParam of page and Size.
+This is used to define the default value of page and size we want to get.
+
+Then we request for the document using the getDocuments method in the user services, passing in the page and size.
+After that we then return a ResponseEntity Ok and Body containing the request, document and a message.
+```java
+    @GetMapping
+    public ResponseEntity<Response> getDocuments(@AuthenticationPrincipal User user, HttpServletRequest request, 
+                                                @RequestParam(value = "page", defaultValue = "0") int page,
+                                                @RequestParam(value = "size", defaultValue = "5") int size) {
+        var documents = documentService.getDocuments(page, size);
+        return ResponseEntity.ok().body(getResponse(request, Map.of("documents", documents), "Document's uploaded", OK);
+    }
+```
+Now we have a way both to created the document and also get the documents.
+
+## Error Documentation for "/documents/upload"
+When I tested the /document/upload endpoint, I received a 200 OK status, but the document was not actually uploaded, and no response was returned. Checking the IDE console, I discovered a custom exception error: "Unable to upload document."
+
+To investigate, I first added some System.out.print statements at key points in the code to trace the data flow and confirm whether the expected logic was being executed. Since the console didn’t indicate where the issue originated, I then used the debugging tool for more detailed insights. The debugger revealed a "credential not found" error, which indicated that the application was attempting to retrieve user credentials but was failing.
+
+This was puzzling because the credentials were successfully used when the user logged into the application. After further debugging and researching the issue, I found that the application was trying to retrieve the credentials of a non-authenticated user at a particular stage, despite an authenticated user being logged in.
+
+The root cause was related to some pre-persist and post-persist methods I had initially created. These methods added a userId to the request context, with the assumption that this userId would represent the createdBy user whenever an entity was created. However, the userId persisted was hardcoded when the application was launched, meaning that even when an authenticated user logged in, any entity created would still have the createdBy field set to the hardcoded userId, rather than the authenticated user's ID.
+
+To fix this, I removed the hardcoded values and updated the logic to ensure that the logged-in user's userId would be used as the createdBy field. Now, whenever an entity is created, the createdBy field correctly reflects the authenticated user rather than the static value.
 
 
+Error with /document (Get)
+```md
+2024-09-10T17:22:39.659+01:00  WARN 11440 --- [nio-8085-exec-5] .w.s.m.s.DefaultHandlerExceptionResolver :
+Resolved [org.springframework.http.converter.HttpMessageNotWritableException: Could not write JSON: Cannot 
+project java.time.Instant to java.lang.String; Target type is not an interface and no matching Converter found]
+```
+Apperently the last login was a `String` instead of a `LocalDateTime`, thats why the application is having issue with converting
+the `localDateTime` to a `String` for the `LastLogin`.
