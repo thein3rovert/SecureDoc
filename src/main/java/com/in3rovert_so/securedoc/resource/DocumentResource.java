@@ -38,6 +38,16 @@ public class DocumentResource {
         return ResponseEntity.ok().body(getResponse(request, Map.of("documents", documents), "Document's Retrieved", OK));
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<Response> searchDocuments(@AuthenticationPrincipal User user, HttpServletRequest request,
+                                                 @RequestParam(value = "page", defaultValue = "0") int page,
+                                                 @RequestParam(value = "size", defaultValue = "5") int size,
+                                                 @RequestParam(value = "name", defaultValue = "") String name) {
+        var documents = documentService.getDocuments(page, size, name);
+        //return ResponseEntity.ok().body(getResponse(request, Map.of("documents", documents), "Document's uploaded", OK));
+        return ResponseEntity.ok().body(getResponse(request, Map.of("documents", documents), "Document's Retrieved", OK));
+    }
+
 
 
 

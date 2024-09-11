@@ -3335,3 +3335,31 @@ project java.time.Instant to java.lang.String; Target type is not an interface a
 ```
 Apperently the last login was a `String` instead of a `LocalDateTime`, thats why the application is having issue with converting
 the `localDateTime` to a `String` for the `LastLogin`.
+The next thing we are going to work on now is the ability to search a document using the documentID ans searching the doocument
+by name and also update and download the document.
+
+## Seach Document EndPoint
+First we created a `search document` endpoint, it has a method named `seachDocuments` responsible for searching documents,
+this method takes the Authenticated User, HttpServlet Request and then RequestParm of page, size and name.
+The page is the number of pages, Size is the number of data size and the name is the name of the document we want to search.
+```java
+ @GetMapping("/search")
+    public ResponseEntity<Response> searchDocuments(@AuthenticationPrincipal User user, HttpServletRequest request,
+                                                 @RequestParam(value = "page", defaultValue = "0") int page,
+                                                 @RequestParam(value = "size", defaultValue = "5") int size,
+                                                 @RequestParam(value = "name", defaultValue = "") String name) {
+        var documents = documentService.getDocuments(page, size, name);
+        return ResponseEntity.ok().body(getResponse(request, Map.of("documents", documents), "Document's Retrieved", OK));
+    }
+```
+The we initiate the getDocuments method, this method takes in page, size and name, similar to the previous getDocument, the 
+only difference is that it retrived document based on the name param also. After than it then returns the documents using 
+the findDocumentByName method in the documentRepository.
+```java
+  @Override
+    public Page<IDocument> getDocuments(int page, int size, String name) {
+        return documentRepository.findDocumentByName(name, PageRequest.of(page, size, Sort.by("name")));
+    }
+```
+So the next thing we are going to do is created a way to find/search document by Id.
+
