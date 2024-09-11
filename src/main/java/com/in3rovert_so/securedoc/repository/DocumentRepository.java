@@ -29,4 +29,6 @@ public interface DocumentRepository extends JpaRepository<DocumentEntity, Long> 
 
     @Query(value = SELECT_DOCUMENT_QUERY, nativeQuery = true)
     Optional<IDocument> findDocumentByDocumentId(String documentId);
+
+    Optional<DocumentEntity> findByDocumentId(String documentId);
 }

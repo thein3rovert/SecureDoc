@@ -2,6 +2,7 @@ package com.in3rovert_so.securedoc.resource;
 
 import com.in3rovert_so.securedoc.domain.Response;
 import com.in3rovert_so.securedoc.dto.User;
+import com.in3rovert_so.securedoc.dtorequest.updateDocumentRequest;
 import com.in3rovert_so.securedoc.service.DocumentService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -52,6 +53,12 @@ public class DocumentResource {
     public ResponseEntity<Response> getDocument(@AuthenticationPrincipal User user, @PathVariable("documentId") String documentId, HttpServletRequest request){
         var document = documentService.getDocumentByDocumentId(documentId);
         return ResponseEntity.ok().body(getResponse(request, Map.of("document", document), "Document's Retrieved", OK));
+    }
+
+    @PatchMapping
+    public ResponseEntity<Response> UpdateDocument(@AuthenticationPrincipal User user, @RequestBody updateDocumentRequest document, HttpServletRequest request){
+        var updatedDocument = documentService.updateDocument(document.getDocumentId(), document.getName(), document.getDescription());
+        return ResponseEntity.ok().body(getResponse(request, Map.of("updatedDocument", updatedDocument), "Document's Updated", OK));
     }
 
 

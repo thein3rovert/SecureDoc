@@ -17,6 +17,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.print.DocFlavor;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
@@ -90,7 +91,24 @@ public class DocumentServiceImpl implements DocumentService {
 
     @Override
     public IDocument updateDocument(String documentId, String name, String description) {
-        return null;
+        try {
+            // Get the document entity
+            var documentEntity = getDocumentEntity(documentId);
+            // Get the path to the local storage
+            var document = Paths.get(FILE_STORAGE).resolve(documentEntity.getName()).toAbsolutePath().normalize();
+            // Rename(Update) the physical file on the computer
+            Files.move(document, document.resolveSibling(name), REPLACE_EXISTING);
+            // Update the documentEntity in the database
+            documentEntity.setName(name);
+            documentEntity.setDescription(description);
+            documentRepository.save(documentEntity);
+            return getDocumentByDocumentId(documentId);
+        } catch (Exception exception) {
+            throw new ApiException("Unable to update Document attributes");
+        }
+    }
+    private DocumentEntity getDocumentEntity(String documentId){
+        return documentRepository.findByDocumentId(documentId).orElseThrow(() -> new ApiException("Document not found"));
     }
 
     @Override

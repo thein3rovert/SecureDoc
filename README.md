@@ -3043,12 +3043,12 @@ we will be working on next.
 
 # Repository 2
 So we created a new package in the DTO packages called `api` and inside this `api` package we created a new interface class,
-called the `IDocument` this class is responsible for the representing the data that that Query in the Document Repository
+called the `IDocument` this class is responsible for the representing the data that the Query in the Document Repository
 class is going to return.
-If we dont have this class as an interface this @Query is not going to work and it also has to be struture in a specific 
-way.
+If we dont have this class as an interface this @Query annotation is not going to work and it also has to be struture in a specific 
+way for it to work.
 
-So what we need to do is give a setter and a setter for every column we have in the document table so every data that exist
+So what we need to do is give a getter and a setter for every column we have in the document table so every data that exist
 in this interface need to have a getter and a setter. 
 By doing it these way, JPA is going to do the mapping for us and also give us the pageable and thats how we are going to 
 be working with both sql and JPA at the same time.
@@ -3387,4 +3387,41 @@ document based on the given id, if the document cannot be found it throws an Api
 
 So the next thing we are going to do now is make sure we can update the document.
 
+### Update Document endpoint
+> If we want to update anything in the database we need to fetch the the entity.
+> Same goes for update anything in the file storage, we need to fetch it before we update it.
+
+We created a patchMapping endpoint for updating the document, the endpoint has a method called `updateDocument`, takes in
+@Authenticated User, updateDocumentRequest which is a dto request and also HttpServletRequst.
+Then the method calls the `updateDocument` method in the `userServices` this method takes in the document Id, name and description.
+```java
+  @PatchMapping
+    public ResponseEntity<Response> UpdateDocument(@AuthenticationPrincipal User user, @RequestBody updateDocumentRequest document, HttpServletRequest request){
+        var updatedDocument = documentService.updateDocument(document.getDocumentId(), document.getName(), document.getDescription());
+        return ResponseEntity.ok().body(getResponse(request, Map.of("updatedDocument", updatedDocument), "Document's Updated", OK));
+    }
+```
+In this updateDocument(userServices), we getv the documentEntity, we need the document entity in other to update the data 
+in the document, then we also get the document file storage path, if we want to update the document in the system stortage
+we need to also get path. 
+Then we rename the physical file in the file storage and also update the document name and description, finally we save 
+the documentEntity in the database and retuen the documentEntity so that the endpoint can then return it in the responsebody
+with a message " Document Updated".
+```java
+ @Override
+    public IDocument updateDocument(String documentId, String name, String description) {
+        try {
+            var documentEntity = getDocumentEntity(documentId);
+            var document = Paths.get(FILE_STORAGE).resolve(documentEntity.getName()).toAbsolutePath().normalize();
+            Files.move(document, document.resolveSibling(name), REPLACE_EXISTING);
+            documentEntity.setName(name);
+            documentEntity.setDescription(description);
+            documentRepository.save(documentEntity);
+            return getDocumentByDocumentId(documentId);
+        } catch (Exception exception) {
+            throw new ApiException("Unable to update Document attributes");
+        }
+    }
+```
+The next thing we are going to work on is make sure we can download the document.
 
