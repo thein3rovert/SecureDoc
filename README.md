@@ -3425,3 +3425,57 @@ with a message " Document Updated".
 ```
 The next thing we are going to work on is make sure we can download the document.
 
+#### Download Document
+First we created a `/download/{documentName}` endpoint, this is responsible for allowing users to download documents from
+the application. The endpoint has a method called the `downloadDocument` this method takes in two param, the @Authenticated 
+Users and @Pathvariable documentName, because the user need to provide the name of the document to be downloaded.
+Then we get the resources(document), using the `userservices.getResources` method in the user servieces.
+We created a new HttpHeader and then set the file name to the httpHeader the set the "Content-Disposition" header to indicate
+that the downloaded file should be treated as an attachment instead of inline and provide the filename in the header.
+
+Then we set `content-type` header to the actual media type of the resource file, then we obtain the media type of the file 
+using the Files.probeContentType.
+Finally we create a ResponseEntity with the resource as the body, the content type set to the media type of the file,
+and the headers set to the httpHeaders object
+```java
+    @GetMapping("/download/{documentName}")
+    public ResponseEntity<Resource> downloadDocument(@AuthenticationPrincipal User user, @PathVariable("documentName") String documentName) throws IOException {
+        var resource = documentService.getResource(documentName);
+        var httpHeaders = new HttpHeaders();
+        // Set the "File-Name" header to the documentName
+        httpHeaders.add("File-Name", documentName);
+        // Set the "Content-Disposition" header to indicate that the downloaded file should be treated as an attachment
+        // and provide the filename in the header
+        httpHeaders.add(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment;File-Name=%s", resource.getFilename()));
+        /* Set the "Content-Type" header to the media type of the resource file
+        Obtain the media type of the file using Files.probeContentType()
+        Create a ResponseEntity with the resource as the body, the content type set to the media type of the file,
+        and the headers set to the httpHeaders object
+         */
+        return ResponseEntity.ok().contentType(MediaType.parseMediaType(Files.probeContentType(resource.getFile().toPath())))
+                .headers(httpHeaders).body(resource);
+    }
+```
+The `getResouces` method from the endpoint helps to obtain the resources from the file storage, it takes in the `documentName
+as param`, then we get the file_storage which is the path file. We then check if the file does not exist in the file storage, 
+if the file exist we return the `urlResources` which is the `uri` of the filePath and if the file does not exist we return
+a new Api Exception with message "document not found". 
+```java
+    @Override
+    public Resource getResource(String documentName) {
+        try {
+            // Get the location of the file
+            var filePath = Paths.get(FILE_STORAGE).toAbsolutePath().normalize().resolve(documentName);
+            // Check if the file exist in the filepath
+            if (!Files.exists(filePath)) {
+                throw new ApiException("Document not found");
+            }
+            return new UrlResource(filePath.toUri());
+        } catch (Exception exception) {
+            throw new ApiException("Unable to update download document");
+        }
+    }
+```
+So now the next thing we want to do is make sure that we set the access control for the endpoint, as of now all users have
+access to the endpoints but we only want specific users to have access to the endpoints, so we are going to set some access control 
+for the application, thats what we will be working on next.

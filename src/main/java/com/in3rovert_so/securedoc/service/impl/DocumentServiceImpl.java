@@ -11,6 +11,7 @@ import com.in3rovert_so.securedoc.service.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -56,22 +57,23 @@ public class DocumentServiceImpl implements DocumentService {
         // Loop through all the files then save
         try {
             // For every document in thr documents
-            for(MultipartFile document : documents) {
+            for (MultipartFile document : documents) {
                 var filename = cleanPath(Objects.requireNonNull(document.getOriginalFilename()));
                 System.out.print(filename);
-                if("..".contains(filename)) {
-                    throw new ApiException(String.format("Invalid file name: %s", filename));}
-                    var documentEntity = DocumentEntity
-                            .builder()
-                            .documentId(UUID.randomUUID().toString())
-                            .name(filename)
-                            .owner(userEntity)
-                            .extension(getExtension(filename))
-                            .uri(getDocumentUri(filename))
-                            .size(document.getSize())
-                            .formattedSize(byteCountToDisplaySize(document.getSize()))
-                            .icon(setIcon((getExtension(filename))))
-                            .build();
+                if ("..".contains(filename)) {
+                    throw new ApiException(String.format("Invalid file name: %s", filename));
+                }
+                var documentEntity = DocumentEntity
+                        .builder()
+                        .documentId(UUID.randomUUID().toString())
+                        .name(filename)
+                        .owner(userEntity)
+                        .extension(getExtension(filename))
+                        .uri(getDocumentUri(filename))
+                        .size(document.getSize())
+                        .formattedSize(byteCountToDisplaySize(document.getSize()))
+                        .icon(setIcon((getExtension(filename))))
+                        .build();
                 System.out.print(documentEntity);
                 var savedDocument = documentRepository.save(documentEntity);
                 System.out.println("Document to be saved " + savedDocument);
@@ -84,7 +86,7 @@ public class DocumentServiceImpl implements DocumentService {
                 System.out.println(newDocument);
             }
             return newDocuments;
-        }catch (Exception exception) {
+        } catch (Exception exception) {
             throw new ApiException("Unable to save documents.");
         }
     }
@@ -107,7 +109,8 @@ public class DocumentServiceImpl implements DocumentService {
             throw new ApiException("Unable to update Document attributes");
         }
     }
-    private DocumentEntity getDocumentEntity(String documentId){
+
+    private DocumentEntity getDocumentEntity(String documentId) {
         return documentRepository.findByDocumentId(documentId).orElseThrow(() -> new ApiException("Document not found"));
     }
 
@@ -117,12 +120,24 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     @Override
-    public void deleteDocument(String documentId) {
-
+    public void deleteDocument(String documentId) { // Todo: Work on the delete document before moving to the frontend.
+//        var deletedDocument = getDocumentEntity(documentId);
+//        documentRepository.delete(deletedDocument);
     }
 
     @Override
     public Resource getResource(String documentName) {
-        return null;
+        try {
+            // Get the location of the file
+            var filePath = Paths.get(FILE_STORAGE).toAbsolutePath().normalize().resolve(documentName);
+            // Check if the file exist in the filepath
+            if (!Files.exists(filePath)) {
+                throw new ApiException("Document not found");
+            }
+            return new UrlResource(filePath.toUri());
+        } catch (Exception exception) {
+            throw new ApiException("Unable to update download document");
+        }
     }
+
 }

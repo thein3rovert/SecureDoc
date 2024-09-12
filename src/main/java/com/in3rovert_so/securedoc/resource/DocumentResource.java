@@ -6,12 +6,17 @@ import com.in3rovert_so.securedoc.dtorequest.updateDocumentRequest;
 import com.in3rovert_so.securedoc.service.DocumentService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.Map;
 
@@ -61,9 +66,23 @@ public class DocumentResource {
         return ResponseEntity.ok().body(getResponse(request, Map.of("updatedDocument", updatedDocument), "Document's Updated", OK));
     }
 
-
-
-
+    @GetMapping("/download/{documentName}")
+    public ResponseEntity<Resource> downloadDocument(@AuthenticationPrincipal User user, @PathVariable("documentName") String documentName) throws IOException {
+        var resource = documentService.getResource(documentName);
+        var httpHeaders = new HttpHeaders();
+        // Set the "File-Name" header to the documentName
+        httpHeaders.add("File-Name", documentName);
+        // Set the "Content-Disposition" header to indicate that the downloaded file should be treated as an attachment
+        // and provide the filename in the header
+        httpHeaders.add(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment;File-Name=%s", resource.getFilename()));
+        /* Set the "Content-Type" header to the media type of the resource file
+        Obtain the media type of the file using Files.probeContentType()
+        Create a ResponseEntity with the resource as the body, the content type set to the media type of the file,
+        and the headers set to the httpHeaders object
+         */
+        return ResponseEntity.ok().contentType(MediaType.parseMediaType(Files.probeContentType(resource.getFile().toPath())))
+                .headers(httpHeaders).body(resource);
+    }
 
 /*    protected URI getUri() {
         return URI.create("");
