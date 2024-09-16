@@ -1,6 +1,7 @@
 package com.in3rovert_so.securedoc.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.in3rovert_so.securedoc.domain.Response;
 import com.in3rovert_so.securedoc.exception.ApiException;
 import jakarta.servlet.http.HttpServlet;
@@ -9,10 +10,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.apache.logging.log4j.util.BiConsumer;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.CredentialsExpiredException;
-import org.springframework.security.authentication.DisabledException;
-import org.springframework.security.authentication.LockedException;
+import org.springframework.security.authentication.*;
 
 // import java.time.LocalDateTime;
 import java.nio.file.AccessDeniedException;
@@ -23,8 +21,7 @@ import static java.time.LocalTime.now;
 import static java.util.Collections.emptyMap;
 import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCauseMessage;
 import static org.apache.logging.log4j.util.Strings.EMPTY;
-import static org.springframework.http.HttpStatus.FORBIDDEN;
-import static org.springframework.http.HttpStatus.UNAUTHORIZED;
+import static org.springframework.http.HttpStatus.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 public class RequestUtils {
@@ -100,6 +97,23 @@ public class RequestUtils {
             // Get the error response object
             Response apiResponse = getErrorResponse(request, response, exception, FORBIDDEN);
             // Write the error response inside the response body httpServlet Response
+            writeResponse.accept(response, apiResponse);
+        } else if
+            (exception instanceof InsufficientAuthenticationException) {
+            var apiResponse = getErrorResponse(request, response, exception, UNAUTHORIZED);
+            writeResponse.accept(response, apiResponse);
+        } else if
+        (exception instanceof MismatchedInputException) {
+            var apiResponse = getErrorResponse(request, response, exception, BAD_REQUEST);
+            writeResponse.accept(response, apiResponse);
+        } else if
+        (exception instanceof DisabledException || exception instanceof LockedException
+                || exception instanceof BadCredentialsException || exception instanceof CredentialsExpiredException
+                || exception instanceof ApiException ) {
+            var apiResponse = getErrorResponse(request, response, exception, BAD_REQUEST);
+            writeResponse.accept(response, apiResponse);
+        } else {
+            Response apiResponse = getErrorResponse(request, response, exception, INTERNAL_SERVER_ERROR);
             writeResponse.accept(response, apiResponse);
         }
     }

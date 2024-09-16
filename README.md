@@ -3494,7 +3494,7 @@ out and will probably get back to it in while.
 
 For now we will continue with the next and last functionalites `Exception Handling`
 
-# Exeception Handling.
+# Exeception Handling(1)
 
 First we created a new called called the `HandleException`, this class is responsible for handlling all the overall,
 exception in the application. This called extends the `ResponseEntityExceptionHandler` and implements `ErrorController`.
