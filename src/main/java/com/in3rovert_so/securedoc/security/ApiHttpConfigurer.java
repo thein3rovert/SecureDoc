@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ApiHttpConfigurer extends AbstractHttpConfigurer<ApiHttpConfigurer, HttpSecurity> {
     private final AuthorizationFilter authorizationFilter;
-    private final MyOwnAuthenticationProvider authenticationProvider;
+    private final MyOwnAuthenticationProvider myOwnAuthenticationProvider;
     private final UserService userService;
     private final JwtService jwtService;
     private final AuthenticationConfiguration authenticationConfiguration; // Need to get a hold of the authentication manager
@@ -22,7 +22,7 @@ public class ApiHttpConfigurer extends AbstractHttpConfigurer<ApiHttpConfigurer,
     //OVERRIDE METHODS
     @Override
     public void init(HttpSecurity http) throws Exception {
-        http.authenticationProvider(authenticationProvider);
+        http.authenticationProvider(myOwnAuthenticationProvider);
     }
 
     @Override

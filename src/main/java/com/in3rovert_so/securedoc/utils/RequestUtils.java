@@ -57,7 +57,7 @@ public class RequestUtils {
      * @param httpStatus The HTTP status code.
      * @return The error response message.
      */
-    private static final BiFunction<Exception, HttpStatus, String> errorResponse = (exception, httpStatus) -> {
+    private static final BiFunction<Exception, HttpStatus, String> errorReason = (exception, httpStatus) -> {
         // Check if the HTTP status is FORBIDDEN or UNAUTHORIZED
         if(httpStatus.isSameCodeAs(FORBIDDEN)) {
             return "You do not have enough permission";
@@ -98,7 +98,7 @@ public class RequestUtils {
         if(exception instanceof AccessDeniedException) {
             // Get the error response object
             Response apiResponse = getErrorResponse(request, response, exception, FORBIDDEN);
-            // Write the error response inside the response body
+            // Write the error response inside the response body httpServlet Response
             writeResponse.accept(response, apiResponse);
         }
     }
@@ -118,6 +118,6 @@ public class RequestUtils {
         // Set the HTTP status code of the response
         response.setStatus(status.value());
         // Create and return a new error response object
-        return new Response(now().toString(), status.value(), request.getRequestURI(), HttpStatus.valueOf(status.value()), errorResponse.apply(exception, status), getRootCauseMessage(exception), emptyMap());
+        return new Response(now().toString(), status.value(), request.getRequestURI(), HttpStatus.valueOf(status.value()), errorReason.apply(exception, status), getRootCauseMessage(exception), emptyMap());
     }
 }

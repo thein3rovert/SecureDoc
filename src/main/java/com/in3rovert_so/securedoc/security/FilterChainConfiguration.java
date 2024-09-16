@@ -36,7 +36,7 @@ import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
+@EnableMethodSecurity  // Important for preAuthorize Annotation
 @RequiredArgsConstructor
 public class FilterChainConfiguration {
 

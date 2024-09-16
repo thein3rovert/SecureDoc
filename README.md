@@ -3479,3 +3479,17 @@ a new Api Exception with message "document not found".
 So now the next thing we want to do is make sure that we set the access control for the endpoint, as of now all users have
 access to the endpoints but we only want specific users to have access to the endpoints, so we are going to set some access control 
 for the application, thats what we will be working on next.
+Using the `@preAuthorize` annotation, we where able to set the access based control for the users.
+
+## Access Role Based
+The `/register`, `/verify/qrcode` and the `/verify/account` endpoints are open endpoint, users dont need to be authenticated before they can 
+access it and they dont need to be logged in before they can access it.
+
+
+The current issue i am facing with this functionalities is that when ever a certain use doesnt have access to a certain
+endpoint, it return a response entity of Ok, instead of a 403 `user has no permission`. I am thinking the isse is with 
+the requestUtil, because its handing the exception for any of the request.
+However even it the 403 is handling the exception, the endpoint should retuernt the 200.ok so I need more time to figure it 
+out and will probably get back to it in while.
+
+For now we will continue with the next and last functionalites `Error Handling`
