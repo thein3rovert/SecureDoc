@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.logging.log4j.util.BiConsumer;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.security.authentication.DisabledException;
@@ -101,6 +102,10 @@ public class RequestUtils {
             // Write the error response inside the response body httpServlet Response
             writeResponse.accept(response, apiResponse);
         }
+    }
+
+    public static Response handleErrorResponse(String message, String exception, HttpServletRequest request, HttpStatusCode status) {
+        return new Response(now().toString(), status.value(), request.getRequestURI(), HttpStatus.valueOf(status.value()), message, exception, emptyMap());
     }
 
     /**

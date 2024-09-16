@@ -3492,4 +3492,32 @@ the requestUtil, because its handing the exception for any of the request.
 However even it the 403 is handling the exception, the endpoint should retuernt the 200.ok so I need more time to figure it 
 out and will probably get back to it in while.
 
-For now we will continue with the next and last functionalites `Error Handling`
+For now we will continue with the next and last functionalites `Exception Handling`
+
+# Exeception Handling.
+
+First we created a new called called the `HandleException`, this class is responsible for handlling all the overall,
+exception in the application. This called extends the `ResponseEntityExceptionHandler` and implements `ErrorController`.
+Then we inject the HttpServletRequest as a private field, we then override the `HandleExceptionInternal` method. 
+This method is called when an exception occurs in the process and is responsible for handling the exception and returning
+a response to the client.
+
+This method takes in Exception, body, headers, httpStatusCode and WebRequest. Using the `@Slf4j` annotation it logs the 
+exception message and then called the helper method called the `handleErrorResponse` mto create an error object then returns
+the responsEntity object with error response and the statusCode.
+```java
+    private HttpServletRequest request;
+    @Override
+    protected ResponseEntity<Object> handleExceptionInternal(Exception exception, Object body, HttpHeaders headers, HttpStatusCode statusCode, WebRequest webRequest) {
+        log.error(String.format("handleExceptionInternal: %s", exception.getMessage()));
+        return new ResponseEntity<>(handleErrorResponse(exception.getMessage(), getRootCauseMessage(exception), request, statusCode), statusCode);
+    }
+```
+The `handleErrorResponse` method takes in a message, exception, httpServlet Request, HttpStatusCode, it then returns a new 
+`Response` to the `HandleExceptionInternal` method.
+```java
+   public static Response handleErrorResponse(String message, String exception, HttpServletRequest request, HttpStatusCode status) {
+        return new Response(now().toString(), status.value(), request.getRequestURI(), HttpStatus.valueOf(status.value()), message, exception, emptyMap());
+    }
+```
+
