@@ -19,35 +19,43 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_DEFAULT;
 @Table(name = "users") //Naming the table
 @JsonInclude(NON_DEFAULT)
 public class UserEntity extends Auditable {
-    //Enforce for the userID to be Unique
-    @Column(updatable = false, unique = true, nullable = false) // We cannot have a user without an id
+    //Defined User Fields
+    @Column(updatable = false, unique = true, nullable = false)
     private String userId;
     private String firstName;
     private String lastName;
-    @Column(unique = true, nullable = false) //We cannot have a user without an email also
+    @Column(unique = true, nullable = false)
     private String email;
-    private Integer loginAttempts; //Using this to keep track of the user login so we can block when it exceeds a limit.
+    private Integer loginAttempts;
     private LocalDateTime lastLogin;
     private String phone;
     private String bio;
     private String imageUrl;
 
-    // Fields needed for spring security.
-    private boolean accountNonExpired; //This helps to load the user from database and use some of the values to create
-    //a user details that we can pass into spring security so that spring security can do auth for us.
+    /*
+    =================
+    SPRING SECURITY FIELDS
+    =================
+     */
+    private boolean accountNonExpired;
     private boolean accountNonLocked;
     private boolean enabled;
     private boolean mfa;
-
+    /*
+     =================
+     MFA FIELDS
+     =================
+      */
     @JsonIgnore
     private String qrCodeSecret;
-
     @Column(columnDefinition = "text")
     private String qrCodeImageUri;
-
+    /*
+     =================
+     USER AND USER_ROLES
+     =================
+      */
     @ManyToOne(fetch = FetchType.EAGER)
-    //Many user can only have one role,  the Eager means when ever we load a user, we want
-    //load their roles.
     @JoinTable(
             name = "user_roles",
             joinColumns = @JoinColumn(

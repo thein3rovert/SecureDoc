@@ -30,10 +30,10 @@ public abstract class Auditable {
     private String referenceId =  new AlternativeJdkIdGenerator().generateId().toString();
 
     @NotNull
-    private Long createdBy; // WHO CREATED IT.
+    private Long createdBy;
 
     @NotNull
-    private Long updatedBy; //WHO UPDATED IT.
+    private Long updatedBy;
 
     @NotNull
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -42,11 +42,14 @@ public abstract class Auditable {
 
     @Column(name = "updated_at", nullable = false)
     @CreatedDate
+
     private LocalDateTime updatedAt; //WHO UPDATED IT at what time.
     /**
+     * ======================
      * This method is called before an entity is persisted in the database.
      * It sets the createdAt, createdBy, updatedBy, and updatedAt fields of the entity.
      * It also checks if a userId is provided and throws an exception if it is not.
+     * ======================
      */
     @PrePersist
     public void beforePersist() {
@@ -59,12 +62,14 @@ public abstract class Auditable {
         setUpdatedAt(now());
     }
     /**
+     * ======================
      * Updates the entity before it is persisted to the database.
      * This method is annotated with @PreUpdate, which means it will be called by the persistence provider
      * immediately before the entity is updated in the database.
      * The method retrieves the user ID from the RequestContext and throws an ApiException if the user ID is null.
      * It then sets the updatedAt field to the current time and the updatedBy field to the user ID.
      * @throws ApiException if the user ID is null
+     * ======================
      */
     @PreUpdate
     public void beforeUpdate() {

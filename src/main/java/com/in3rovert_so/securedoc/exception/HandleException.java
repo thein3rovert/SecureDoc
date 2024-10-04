@@ -53,7 +53,7 @@ public class HandleException extends ResponseEntityExceptionHandler implements E
         return new ResponseEntity<>(handleErrorResponse(fieldsMessage, getRootCauseMessage(exception), request, statusCode), statusCode);
     }
     /*
-    Because we need to be able to get all the message
+    Because we need to be able to get all the message 
     in the dtoRequest and turn them in to a single string, then pass in the message for the error we will return
     to the user.
      */
