@@ -16,15 +16,26 @@ import static jakarta.persistence.FetchType.EAGER;
 @Getter
 @Setter
 @ToString
-@Builder //Need to know what this is for
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "credentials") //Naming the table
+@Table(name = "credentials")
 @JsonInclude(NON_DEFAULT)
 public class CredentialEntity extends Auditable {
+     /*
+    ==================
+    Field | Password, UserEntity, UserEntity w/ Password
+    ==================
+     */
+
     private String password;
 
+    /*
+    ==================
+    Load User Credential w/ UserEntity(id)
+    ==================
+     */
     @OneToOne(targetEntity = UserEntity.class, fetch = EAGER) //When ever we load the userEntity it will load
     //all user associated with the credentials.
     @JoinColumn(name = "user_id", nullable = false) //We need the id specifically so we its just going to

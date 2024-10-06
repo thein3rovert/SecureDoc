@@ -17,17 +17,21 @@ import static jakarta.persistence.FetchType.EAGER;
 @Getter
 @Setter
 @ToString
-@Builder //Need to know what this is for
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "confirmations") //Naming the table
+@Table(name = "confirmations")
 @JsonInclude(NON_DEFAULT)
 
 public class ConfirmationEntity extends Auditable {
-    private String key; // ? This is going to be a like a UUID that we will sent to the user as a token
+    /*
+    ===================
+    Field: Key(Token),UserEntity,UserEntity w/ key
+    ===================
+     */
+    private String key;
 
-    //All this stays the same because we need to reference the user.
     @OneToOne(targetEntity = UserEntity.class, fetch = EAGER)
     @JoinColumn(name = "user_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
@@ -36,9 +40,13 @@ public class ConfirmationEntity extends Auditable {
     @JsonProperty("user_id")
     private UserEntity userEntity;
 
-    public ConfirmationEntity(UserEntity userEntity) { // We dont need to get the key because they are going to generate it for us.
+    /*
+    ==================
+    Generate new UUID for Key for each object created
+    ==================
+     */
+    public ConfirmationEntity(UserEntity userEntity) {
         this.userEntity = userEntity;
-        this.key = UUID.randomUUID().toString(); //When ever we create a new instance of this confirmation, it going to
-        //automatically generate the key.
+        this.key = UUID.randomUUID().toString(); // For each instance -> generate key
     }
 }
